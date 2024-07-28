@@ -17,7 +17,7 @@ import { AuthContext } from "../../context/Auth/AuthContext";
 import "../../assets/ReactToastify-BTGsrsBX.css";
 import "../../assets/styles-D9tTQ5bH.css";
 import "../../assets/background-animation.css";
-import logo from "../../assets/logo.png";
+import logo from "../../assets/sendbot-logo4-500x.png";
 
 const Copyright = () => {
   return (
