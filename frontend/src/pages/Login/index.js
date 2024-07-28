@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react";
 import { Link as RouterLink } from "react-router-dom";
-import { Button, CssBaseline, TextField, Link, Grid, Box, Typography, Container } from "@material-ui/core";
+import { Button, CssBaseline, TextField, Link, Grid, Typography, Container } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { versionSystem, nomeEmpresa } from "../../../package.json";
 import { i18n } from "../../translate/i18n";
@@ -75,15 +75,13 @@ const Login = () => {
   };
 
   return (
-    <div className={`${classes.root} animatedBackground`}> {/* Adicione a classe da animação aqui */}
-      <div className="line"></div>
-      <div className="line"></div>
-      <div className="line"></div>
-      <div className="line"></div>
-      <div className="light"></div>
-      <div className="light"></div>
-      <div className="light"></div>
-      <div className="light"></div>
+    <div className={`${classes.root} animatedBackground`}>
+      {Array.from({ length: 19 }, (_, i) => (
+        <div key={i} className="line"></div>
+      ))}
+      {Array.from({ length: 19 }, (_, i) => (
+        <div key={i + 19} className="energy"></div>
+      ))}
       <Container component="main" maxWidth="xs">
         <CssBaseline />
         <div className={classes.paper}>
@@ -129,17 +127,9 @@ const Login = () => {
               fullWidth
               variant="contained"
               color="primary"
-              className={classes.submit}
             >
-              {i18n.t("login.buttons.submit")}
+              {i18n.t("login.form.submit")}
             </Button>
-            <Grid container>
-              <Grid item>
-                <Link href="#" variant="body2" component={RouterLink} to="/signup">
-                  {i18n.t("login.buttons.register")}
-                </Link>
-              </Grid>
-            </Grid>
           </form>
         </div>
         <Box mt={8}>
