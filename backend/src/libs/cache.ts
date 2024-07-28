@@ -30,7 +30,9 @@ export async function setFromParams(
   const finalKey = `${key}:${encryptParams(params)}`;
   try {
     if (option !== undefined && optionValue !== undefined) {
-      await redis.set(finalKey, value, option, optionValue);
+      // O ioredis não suporta diretamente as opções passadas como string
+      // A opção padrão será usada
+      await redis.set(finalKey, value, "EX", optionValue); // Usando "EX" para definir o tempo de expiração, se for numérico
     } else {
       await redis.set(finalKey, value);
     }
@@ -68,7 +70,9 @@ export async function set(
 ) {
   try {
     if (option !== undefined && optionValue !== undefined) {
-      await redis.set(key, value, option, optionValue);
+      // O ioredis não suporta diretamente as opções passadas como string
+      // A opção padrão será usada
+      await redis.set(key, value, "EX", optionValue); // Usando "EX" para definir o tempo de expiração, se for numérico
     } else {
       await redis.set(key, value);
     }
