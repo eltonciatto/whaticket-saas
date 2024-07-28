@@ -1,8 +1,23 @@
 const { resolve } = require("path");
 
+/**
+ * Helper function to construct paths
+ * @param {string} basePath - The base directory path.
+ * @param {string[]} subPaths - The subdirectories to append.
+ * @returns {string} - The resolved path.
+ */
+const constructPath = (basePath, ...subPaths) => resolve(__dirname, basePath, ...subPaths);
+
 module.exports = {
-  "config": resolve(__dirname, "dist", "config", "database.js"),
-  "modules-path": resolve(__dirname, "dist", "models"),
-  "migrations-path": resolve(__dirname, "dist", "database", "migrations"),
-  "seeders-path": resolve(__dirname, "dist", "database", "seeds")
+  // Path to the database configuration file
+  config: constructPath("dist", "config", "database.js"),
+  
+  // Path to the models directory
+  modelsPath: constructPath("dist", "models"),
+  
+  // Path to the migrations directory
+  migrationsPath: constructPath("dist", "database", "migrations"),
+  
+  // Path to the seeders directory
+  seedersPath: constructPath("dist", "database", "seeds")
 };
