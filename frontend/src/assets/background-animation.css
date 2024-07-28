@@ -19,17 +19,6 @@
   }
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .animatedBackground {
   background: linear-gradient(270deg, #ff007f, #8a2be2, #1e90ff, #ff4500);
   background-size: 800% 800%;
@@ -45,7 +34,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 70%);
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0) 50%);
   background-size: 200% 200%;
   animation: lightStreaks 5s linear infinite;
   mix-blend-mode: overlay;
@@ -81,4 +70,15 @@ button {
 
 button:hover {
   background: #0d47a1;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
