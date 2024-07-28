@@ -5,8 +5,6 @@
   "nomeEmpresa": "Sendbot",
   "private": true,
   "dependencies": {
-    "three": "^0.129.0",
-    "@react-three/fiber": "^7.0.0",
     "@date-io/date-fns": "^2.14.0",
     "@emotion/styled": "^11.10.6",
     "@material-ui/core": "4.12.3",
