@@ -25,7 +25,7 @@ const messages = {
         },
         buttons: {
           submit: "Entrar",
-          register: "Registre-se, agora mesmo!",
+          register: "Criar Conta",
         },
       },
       plans: {
@@ -51,7 +51,7 @@ const messages = {
           name: "Nome da Empresa",
           plan: "Plano",
           token: "Token",
-          submit: "Cadastrar",
+          submit: "Criar Conta Agora",
           success: "Empresa criada com sucesso!",
         },
       },
