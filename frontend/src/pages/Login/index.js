@@ -63,7 +63,7 @@ const useStyles = makeStyles((theme) => ({
     position: "absolute",
     top: "-40px", // Ajuste a posição da logo conforme necessário
     backgroundColor: theme.palette.background.paper,
-    borderRadius: "50%",
+    borderRadius: "0%",
     padding: theme.spacing(1),
   },
   welcomeText: {
