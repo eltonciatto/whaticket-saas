@@ -39,9 +39,17 @@ const useStyles = makeStyles(theme => ({
     position: "relative",
     zIndex: 1,
   },
-  avatar: {
-    margin: theme.spacing(1),
-    backgroundColor: theme.palette.secondary.main,
+  logo: {
+    position: "absolute",
+    top: "-80px",
+    width: "80px",
+    height: "80px",
+    backgroundColor: "#fff",
+    borderRadius: "50%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "0px 0px 10px rgba(0,0,0,0.1)"
   },
   form: {
     width: "100%",
@@ -50,9 +58,16 @@ const useStyles = makeStyles(theme => ({
   submit: {
     margin: theme.spacing(2, 0, 1),
   },
-  powered: {
-    color: "white",
+  createAccountButton: {
+    margin: theme.spacing(1, 0, 2),
   },
+  terms: {
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(2),
+  },
+  copyright: {
+    marginTop: theme.spacing(2),
+  }
 }));
 
 const Login = () => {
@@ -80,8 +95,8 @@ const Login = () => {
       <Container component="main" maxWidth="xs">
         <CssBaseline />
         <div className={classes.paper}>
-          <div>
-            <img style={{ margin: "0 auto", width: "80%", position: "absolute", top: "-60px" }} src={logo} alt="Whats" />
+          <div className={classes.logo}>
+            <img src={logo} alt="Whats" style={{ width: "80%" }} />
           </div>
           <form className={classes.form} noValidate onSubmit={handleSubmit}>
             <TextField
@@ -130,17 +145,19 @@ const Login = () => {
               fullWidth
               variant="contained"
               color="primary"
-              className={classes.submit}
+              className={classes.createAccountButton}
               component={RouterLink}
               to="/signup"
             >
-              {i18n.t("login.buttons.register").replace("Registrar-se", "Criar Conta")}
+              Criar Conta
             </Button>
+            <Typography className={classes.terms} variant="body2" color="primary" align="center">
+              Ao continuar, você concorda com os <Link color="primary" href="https://sendbot.co/termos">Termos de Serviço</Link> e a <Link color="primary" href="https://sendbot.co/politica-de-privacidade">Política de Privacidade</Link>.
+            </Typography>
+            <Typography className={classes.copyright}>
+              © Sendbot 2024 - Whaticket v4.8.5
+            </Typography>
           </form>
-          <Typography variant="body2" color="primary" align="center">
-            Ao continuar, você concorda com os <Link color="primary" href="https://sendbot.co/termos">Termos de Serviço</Link> e a <Link color="primary" href="https://sendbot.co/politica-de-privacidade">Política de Privacidade</Link>.
-          </Typography>
-          <Copyright />
         </div>
       </Container>
     </div>
