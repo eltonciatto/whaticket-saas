@@ -66,6 +66,9 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: "50%",
     padding: theme.spacing(1),
   },
+  welcomeText: {
+    marginBottom: theme.spacing(2),
+  },
 }));
 
 const Login = () => {
@@ -94,6 +97,9 @@ const Login = () => {
         <CssBaseline />
         <div className={classes.paper}>
           <img src={logo} alt="Whats" className={classes.logo} />
+          <Typography variant="h5" className={classes.welcomeText}>
+            Bem-vindo ao Sendbot
+          </Typography>
           <form className={classes.form} noValidate onSubmit={handleSubmit}>
             <TextField
               variant="outlined"
@@ -168,7 +174,9 @@ const Login = () => {
               </Link>
               .
             </Typography>
-            <Copyright />
+            <Box mt={2}>
+              <Copyright />
+            </Box>
           </Box>
         </div>
       </Container>
