@@ -7,7 +7,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import { versionSystem, nomeEmpresa } from "../../../package.json";
 import { i18n } from "../../translate/i18n";
 import { AuthContext } from "../../context/Auth/AuthContext";
-import "../../assets/ReactToastify-BTGsrsBX.css"; // Importe o arquivo CSS
+import "../../assets/background-animation.css"; // Importe o arquivo CSS da animação
 import logo from "../../assets/logo.png";
 
 // Componente de copyright
@@ -34,7 +34,6 @@ const useStyles = makeStyles(theme => ({
     alignItems: "center",
     justifyContent: "center",
     textAlign: "center",
-    // Remova o backgroundImage e outros estilos relacionados
   },
   paper: {
     backgroundColor: theme.palette.login,
@@ -75,7 +74,7 @@ const Login = () => {
   };
 
   return (
-    <div className={`${classes.root} ReactToastify-BTGsrsBX`}> {/* Adicione a classe CSS aqui */}
+    <div className={`${classes.root} animatedBackground`}> {/* Adicione a classe da animação aqui */}
       <Container component="main" maxWidth="xs">
         <CssBaseline />
         <div className={classes.paper}>
