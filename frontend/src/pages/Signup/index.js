@@ -42,10 +42,11 @@ const useStyles = makeStyles((theme) => ({
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    padding: "55px 30px",
+    padding: "35px 20px", // Diminuir o padding
     borderRadius: "12.5px",
     position: "relative",
     zIndex: 1,
+    marginTop: theme.spacing(4), // Ajustar o marginTop
   },
   form: {
     width: "100%",
@@ -189,7 +190,7 @@ const SignUp = () => {
                           {...field}
                           variant="outlined"
                           fullWidth
-                          label="DDD988888888"
+                          label="exemplo: 11 980004000"
                           inputProps={{ maxLength: 11 }}
                         />
                       )}
@@ -211,7 +212,7 @@ const SignUp = () => {
                   </Grid>
                   <Grid item xs={12}>
                     <FormControl variant="outlined" fullWidth>
-                      <InputLabel htmlFor="plan-selection">Plano</InputLabel>
+                      <InputLabel htmlFor="plan-selection">Escolha o Plano</InputLabel>
                       <Field
                         as={Select}
                         id="plan-selection"
