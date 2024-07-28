@@ -62,8 +62,7 @@ const useStyles = makeStyles((theme) => ({
     width: "80px", // Ajuste o tamanho da logo conforme necessário
     position: "absolute",
     top: "-40px", // Ajuste a posição da logo conforme necessário
-    backgroundColor: theme.palette.background.paper,
-    borderRadius: "0%",
+    borderRadius: "50%",
     padding: theme.spacing(1),
   },
   welcomeText: {
@@ -163,14 +162,14 @@ const Login = () => {
             <Typography variant="body2" color="textSecondary" align="center">
               Ao continuar, você concorda com os{" "}
               <Link color="textSecondary" href="https://sendbot.co/termos">
-                Termos de Serviço
+                Termos
               </Link>{" "}
               e a{" "}
               <Link
                 color="textSecondary"
                 href="https://sendbot.co/politica-de-privacidade"
               >
-                Política de Privacidade
+                Política
               </Link>
               .
             </Typography>
