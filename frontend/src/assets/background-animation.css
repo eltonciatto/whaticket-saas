@@ -10,6 +10,7 @@ body {
   align-items: center;
   font-family: 'Roboto', sans-serif;
   color: #ffffff;
+  overflow: hidden;
 }
 
 @keyframes gradientBG {
@@ -24,6 +25,30 @@ body {
   }
 }
 
+.lines {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.line {
+  position: absolute;
+  width: 2px;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  animation: moveLine 5s linear infinite;
+}
+
+@keyframes moveLine {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-100%);
+  }
+}
+
 .container {
   text-align: center;
   backdrop-filter: blur(10px);
@@ -31,6 +56,7 @@ body {
   border-radius: 15px;
   padding: 50px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  z-index: 1;
 }
 
 h1 {
