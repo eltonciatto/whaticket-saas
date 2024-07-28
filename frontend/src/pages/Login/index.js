@@ -1,14 +1,7 @@
 import React, { useState, useContext } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import {
-  Button,
-  CssBaseline,
-  TextField,
-  Link,
-  Grid,
-  Box,
-  Typography,
-  Container,
+  Button, CssBaseline, TextField, Link, Grid, Box, Typography, Container
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { versionSystem, nomeEmpresa } from "../../../package.json";
@@ -16,9 +9,10 @@ import { i18n } from "../../translate/i18n";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import "../../assets/ReactToastify-BTGsrsBX.css";
 import "../../assets/styles-D9tTQ5bH.css";
+import "../../assets/background-animation.css"; // Importe o arquivo CSS da animação
 import logo from "../../assets/logo.png";
-import AnimatedBackground from "./AnimatedBackground";
 
+// Componente de copyright
 const Copyright = () => {
   return (
     <Typography variant="body2" color="primary" align="center">
@@ -32,7 +26,8 @@ const Copyright = () => {
   );
 };
 
-const useStyles = makeStyles((theme) => ({
+// Estilos usando makeStyles
+const useStyles = makeStyles(theme => ({
   root: {
     width: "100vw",
     height: "100vh",
@@ -50,12 +45,19 @@ const useStyles = makeStyles((theme) => ({
     padding: "55px 30px",
     borderRadius: "12.5px",
   },
+  avatar: {
+    margin: theme.spacing(1),
+    backgroundColor: theme.palette.secondary.main,
+  },
   form: {
     width: "100%",
     marginTop: theme.spacing(1),
   },
   submit: {
     margin: theme.spacing(3, 0, 2),
+  },
+  powered: {
+    color: "white",
   },
 }));
 
@@ -74,8 +76,7 @@ const Login = () => {
   };
 
   return (
-    <div className={classes.root}>
-      <AnimatedBackground />
+    <div className={`${classes.root} animatedBackground`}> {/* Adicione a classe da animação aqui */}
       <Container component="main" maxWidth="xs">
         <CssBaseline />
         <div className={classes.paper}>
