@@ -12,7 +12,7 @@ import {
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import InputMask from 'react-input-mask';
-import logo from "../../assets/sendbot-logo4-500x.png"; // Atualizado
+import logo from "../../assets/sendbot-logo4-500x.png";
 import { i18n } from "../../translate/i18n";
 import { openApi } from "../../services/api";
 import toastError from "../../errors/toastError";
@@ -246,26 +246,26 @@ const SignUp = () => {
               </Form>
             )}
           </Formik>
-        </div>
-        <Box mt={2} className={classes.linkContainer}>
-          <Typography variant="body2" color="textSecondary" align="center">
-            Ao continuar, você concorda com os{" "}
-            <Link color="textSecondary" href="https://sendbot.co/termos">
-              Termos
-            </Link>{" "}
-            e a{" "}
-            <Link
-              color="textSecondary"
-              href="https://sendbot.co/politica-de-privacidade"
-            >
-              Política
-            </Link>
-            .
-          </Typography>
-          <Box mt={2}>
-            <Copyright />
+          <Box mt={2} className={classes.linkContainer}>
+            <Typography variant="body2" color="textSecondary" align="center">
+              Ao continuar, você concorda com os{" "}
+              <Link color="textSecondary" href="https://sendbot.co/termos">
+                Termos
+              </Link>{" "}
+              e a{" "}
+              <Link
+                color="textSecondary"
+                href="https://sendbot.co/politica-de-privacidade"
+              >
+                Política
+              </Link>
+              .
+            </Typography>
+            <Box mt={2}>
+              <Copyright />
+            </Box>
           </Box>
-        </Box>
+        </div>
       </Container>
     </div>
   );
