@@ -42,11 +42,11 @@ const useStyles = makeStyles((theme) => ({
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    padding: "35px 20px",
+    padding: "35px 20px", // Diminuir o padding
     borderRadius: "12.5px",
     position: "relative",
     zIndex: 1,
-    marginTop: theme.spacing(4),
+    marginTop: theme.spacing(4), // Ajustar o marginTop
   },
   form: {
     width: "100%",
