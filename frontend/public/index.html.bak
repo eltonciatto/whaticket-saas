@@ -1,28 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
-	<head>
-		<title>AppBot | Launcher & Co.</title>
-		<link
-			rel="stylesheet"
-			href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
-		/>
-		<link rel="apple-touch-icon" href="%PUBLIC_URL%/apple-touch-icon.png" />
-		<link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-		<link rel=”shortcut icon” href=”%PUBLIC_URL%/favicon.ico”>
-		<link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-		<meta name="theme-color" content="#000000" />
-		<meta
-			name="viewport"
-			content="minimum-scale=1, initial-scale=1, width=device-width"
-		/>
-		<!-- Issue workaround for React v16. -->
-		<script>
-			// See https://github.com/facebook/react/issues/20829#issuecomment-802088260
-			if (!crossOriginIsolated) SharedArrayBuffer = ArrayBuffer;
-		</script>
-	</head>
-	<body>
-		<noscript>You need to enable JavaScript to run this app.</noscript>
-		<div id="root"></div>
-	</body>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sendbot - Whaticket</title>
+
+    <!-- Meta Tags for SEO -->
+    <meta name="description" content="Sendbot - Whaticket: A solução definitiva para gestão de tickets no WhatsApp.">
+    <meta name="keywords" content="WhatsApp, Gestão de Tickets, Atendimento ao Cliente, Automação">
+    <meta name="author" content="Sendbot">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Sendbot - Whaticket">
+    <meta property="og:description" content="A solução definitiva para gestão de tickets no WhatsApp.">
+    <meta property="og:image" content="%PUBLIC_URL%/og-image.png">
+    <meta property="og:url" content="https://whaticket.sendbot.co">
+    <meta property="og:type" content="website">
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Sendbot - Whaticket">
+    <meta name="twitter:description" content="A solução definitiva para gestão de tickets no WhatsApp.">
+    <meta name="twitter:image" content="%PUBLIC_URL%/twitter-image.png">
+
+    <!-- Favicon and App Icons -->
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/apple-touch-icon.png">
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico">
+    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
+    
+    <!-- Theme Color for Mobile Browsers -->
+    <meta name="theme-color" content="#000000">
+
+    <!-- Font and Styles -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+    
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Sendbot",
+        "url": "https://whaticket.sendbot.co",
+        "logo": "%PUBLIC_URL%/logo.png",
+        "sameAs": [
+            "https://www.instagram.com/sendbot.co/",
+            "https://whatsapp.com/channel/0029VaTgsNMKQuJRS306UC1Q",
+            "https://www.youtube.com/typebotbrasil"
+        ]
+    }
+    </script>
+
+    <!-- Issue workaround for React v16. -->
+    <script>
+        // See https://github.com/facebook/react/issues/20829#issuecomment-802088260
+        if (!crossOriginIsolated) SharedArrayBuffer = ArrayBuffer;
+    </script>
+</head>
+<body>
+    <noscript>Você precisa habilitar o JavaScript para rodar esta aplicação.</noscript>
+    <div id="root"></div>
+</body>
 </html>
