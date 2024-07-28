@@ -7,18 +7,18 @@ import { i18n } from "../../translate/i18n";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import "../../assets/ReactToastify-BTGsrsBX.css";
 import "../../assets/styles-D9tTQ5bH.css";
-import "../../assets/background-animation.css"; // Importe o arquivo CSS da animação
+import "../../assets/background-animation.css";
 import logo from "../../assets/logo.png";
 
 const Copyright = () => {
   return (
-    <Typography variant="body2" color="primary" align="center">
-      {"© Sendbot 2024 - Whaticket v4.8.5"}
+    <Typography variant="body2" color="textSecondary" align="center">
+      © Sendbot 2024 - Whaticket v4.8.5
     </Typography>
   );
 };
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     width: "100vw",
     height: "100vh",
@@ -39,35 +39,24 @@ const useStyles = makeStyles(theme => ({
     position: "relative",
     zIndex: 1,
   },
-  logo: {
-    position: "absolute",
-    top: "-80px",
-    width: "80px",
-    height: "80px",
-    backgroundColor: "#fff",
-    borderRadius: "50%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    boxShadow: "0px 0px 10px rgba(0,0,0,0.1)"
-  },
   form: {
     width: "100%",
     marginTop: theme.spacing(1),
   },
   submit: {
-    margin: theme.spacing(2, 0, 1),
+    margin: theme.spacing(1, 0, 1),
   },
-  createAccountButton: {
-    margin: theme.spacing(1, 0, 2),
-  },
-  terms: {
-    marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(2),
-  },
-  copyright: {
+  linkContainer: {
     marginTop: theme.spacing(2),
-  }
+  },
+  logo: {
+    width: "80px", // Ajuste o tamanho da logo conforme necessário
+    position: "absolute",
+    top: "-40px", // Ajuste a posição da logo conforme necessário
+    backgroundColor: theme.palette.background.paper,
+    borderRadius: "50%",
+    padding: theme.spacing(1),
+  },
 }));
 
 const Login = () => {
@@ -95,9 +84,7 @@ const Login = () => {
       <Container component="main" maxWidth="xs">
         <CssBaseline />
         <div className={classes.paper}>
-          <div className={classes.logo}>
-            <img src={logo} alt="Whats" style={{ width: "80%" }} />
-          </div>
+          <img src={logo} alt="Whats" className={classes.logo} />
           <form className={classes.form} noValidate onSubmit={handleSubmit}>
             <TextField
               variant="outlined"
@@ -127,7 +114,7 @@ const Login = () => {
             />
             <Grid container justifyContent="flex-end">
               <Grid item xs={6} style={{ textAlign: "right" }}>
-                <Link component={RouterLink} to="/forgetpsw" variant="body2">
+                <Link component={RouterLink} to="/forgetpsw" variant="body2" color="textSecondary">
                   Esqueceu sua senha?
                 </Link>
               </Grid>
@@ -145,19 +132,19 @@ const Login = () => {
               fullWidth
               variant="contained"
               color="primary"
-              className={classes.createAccountButton}
               component={RouterLink}
               to="/signup"
+              className={classes.submit}
             >
-              Criar Conta
+              {i18n.t("login.buttons.register")}
             </Button>
-            <Typography className={classes.terms} variant="body2" color="primary" align="center">
-              Ao continuar, você concorda com os <Link color="primary" href="https://sendbot.co/termos">Termos de Serviço</Link> e a <Link color="primary" href="https://sendbot.co/politica-de-privacidade">Política de Privacidade</Link>.
-            </Typography>
-            <Typography className={classes.copyright}>
-              © Sendbot 2024 - Whaticket v4.8.5
-            </Typography>
           </form>
+          <Box className={classes.linkContainer}>
+            <Typography variant="body2" color="textSecondary" align="center">
+              Ao continuar, você concorda com os <Link color="textSecondary" href="https://sendbot.co/termos">Termos de Serviço</Link> e a <Link color="textSecondary" href="https://sendbot.co/politica-de-privacidade">Política de Privacidade</Link>.
+            </Typography>
+            <Copyright />
+          </Box>
         </div>
       </Container>
     </div>
