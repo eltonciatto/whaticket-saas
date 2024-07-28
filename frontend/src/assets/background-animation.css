@@ -1,95 +1,84 @@
-@keyframes gradientBackground {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-@keyframes moveLights {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
 .animatedBackground {
-  background: linear-gradient(270deg, #ff007f, #8a2be2, #1e90ff, #ff4500);
-  background-size: 800% 800%;
-  animation: gradientBackground 15s ease infinite;
+  background: #240046; /* Cor de fundo sólida */
   position: relative;
   overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+}
+
+@keyframes moveLines {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
 }
 
 .line {
   position: absolute;
   width: 200%;
   height: 2px;
-  background: rgba(255, 255, 255, 0.2);
-  animation: moveLights 10s linear infinite;
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 100%);
+  animation: moveLines 3s linear infinite;
 }
 
 .line:nth-child(1) {
   top: 20%;
-  animation-duration: 8s;
+  animation-delay: 0s;
 }
 
 .line:nth-child(2) {
   top: 40%;
-  animation-duration: 12s;
+  animation-delay: 1s;
 }
 
 .line:nth-child(3) {
   top: 60%;
-  animation-duration: 10s;
+  animation-delay: 2s;
 }
 
 .line:nth-child(4) {
   top: 80%;
-  animation-duration: 14s;
+  animation-delay: 3s;
+}
+
+@keyframes lightEffect {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
 }
 
 .light {
   position: absolute;
   width: 10px;
   height: 10px;
-  background: rgba(255, 255, 255, 0.8);
+  background: #ffffff;
   border-radius: 50%;
-  animation: moveLights 5s linear infinite;
-}
-
-.light:nth-child(1) {
-  top: 25%;
-  left: 0;
-  animation-delay: -2s;
-}
-
-.light:nth-child(2) {
-  top: 50%;
-  left: 20%;
-  animation-delay: -4s;
-}
-
-.light:nth-child(3) {
-  top: 75%;
-  left: 40%;
-  animation-delay: -6s;
-}
-
-.light:nth-child(4) {
-  top: 50%;
-  left: 60%;
-  animation-delay: -8s;
+  animation: lightEffect 2s linear infinite;
 }
 
 .light:nth-child(5) {
-  top: 25%;
-  left: 80%;
-  animation-delay: -10s;
+  top: 20%;
+  animation-delay: 0s;
+}
+
+.light:nth-child(6) {
+  top: 40%;
+  animation-delay: 0.5s;
+}
+
+.light:nth-child(7) {
+  top: 60%;
+  animation-delay: 1s;
+}
+
+.light:nth-child(8) {
+  top: 80%;
+  animation-delay: 1.5s;
 }
