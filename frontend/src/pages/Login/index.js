@@ -62,7 +62,7 @@ const useStyles = makeStyles((theme) => ({
     width: "80px", // Ajuste o tamanho da logo conforme necessário
     position: "absolute",
     top: "-40px", // Ajuste a posição da logo conforme necessário
-    borderRadius: "50%",
+    borderRadius: "0%", // Deixar a logo redonda ou não
     padding: theme.spacing(1),
   },
   welcomeText: {
