@@ -253,7 +253,12 @@ const SignUp = () => {
                       Atendentes: {selectedPlan.users} <br />
                       WhatsApp: {selectedPlan.connections} <br />
                       Filas: {selectedPlan.queues} <br />
-                      Valor: R$ {selectedPlan.value}
+                      ✅ Kanban -
+                      ✅ DialogFlow -
+                      ✅ N8N - <br />
+                      ✅ WebHooks -
+                      ✅ TypeBot -
+                      ✅ ChatGPT
                     </Typography>
                   </Box>
                 )}
