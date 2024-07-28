@@ -10,75 +10,8 @@
   }
 }
 
-@keyframes lightStreaks {
-  0% {
-    background-position: 0% 0%;
-  }
-  100% {
-    background-position: 100% 100%;
-  }
-}
-
 .animatedBackground {
   background: linear-gradient(270deg, #ff007f, #8a2be2, #1e90ff, #ff4500);
   background-size: 800% 800%;
   animation: gradientBackground 15s ease infinite;
-  position: relative;
-  overflow: hidden;
-}
-
-.animatedBackground::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0) 50%);
-  background-size: 200% 200%;
-  animation: lightStreaks 5s linear infinite;
-  mix-blend-mode: overlay;
-}
-
-.container {
-  text-align: center;
-  backdrop-filter: blur(10px);
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
-  padding: 50px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  position: relative;
-  z-index: 1;
-}
-
-h1 {
-  font-size: 3rem;
-  margin-bottom: 20px;
-  animation: fadeIn 2s ease-in-out;
-}
-
-button {
-  background: #1976d2;
-  border: none;
-  padding: 15px 30px;
-  border-radius: 30px;
-  color: #fff;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-button:hover {
-  background: #0d47a1;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
