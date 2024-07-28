@@ -2,14 +2,25 @@ import Redis from "ioredis";
 import { REDIS_URI_CONNECTION } from "../config/redis";
 import * as crypto from "crypto";
 
-const redis = new Redis(REDIS_URI_CONNECTION);
+// Configuração do cliente Redis com opções de gerenciamento de falhas
+const redis = new Redis(REDIS_URI_CONNECTION, {
+  connectTimeout: 10000, // Tempo limite de conexão: 10 segundos
+  maxRetriesPerRequest: 10, // Número máximo de tentativas de reenvio
+  retryStrategy: (times) => {
+    // Estrategia de reenvio exponencial
+    const delay = Math.min(times * 50, 2000); // Exponencialmente aumente o tempo de espera
+    return delay;
+  }
+});
 
-function encryptParams(params: any): string {
+// Função para criptografar parâmetros
+function encryptParams(params: any) {
   const str = JSON.stringify(params);
-  return crypto.createHash("sha256").update(str).digest("hex"); // Use hexadecimal encoding
+  return crypto.createHash("sha256").update(str).digest("base64");
 }
 
-export function setFromParams(
+// Função para definir valores no Redis com base nos parâmetros
+export async function setFromParams(
   key: string,
   params: any,
   value: string,
@@ -17,65 +28,95 @@ export function setFromParams(
   optionValue?: string | number
 ) {
   const finalKey = `${key}:${encryptParams(params)}`;
-  if (option !== undefined && optionValue !== undefined) {
-    return set(finalKey, value, option, optionValue);
+  try {
+    if (option !== undefined && optionValue !== undefined) {
+      await redis.set(finalKey, value, option, optionValue);
+    } else {
+      await redis.set(finalKey, value);
+    }
+  } catch (error) {
+    console.error(`Erro ao definir o valor para a chave ${finalKey}:`, error);
   }
-  return set(finalKey, value);
 }
 
-export function getFromParams(key: string, params: any) {
+// Função para obter valores do Redis com base nos parâmetros
+export async function getFromParams(key: string, params: any) {
   const finalKey = `${key}:${encryptParams(params)}`;
-  return get(finalKey);
+  try {
+    return await redis.get(finalKey);
+  } catch (error) {
+    console.error(`Erro ao obter o valor para a chave ${finalKey}:`, error);
+  }
 }
 
-export function delFromParams(key: string, params: any) {
+// Função para deletar valores do Redis com base nos parâmetros
+export async function delFromParams(key: string, params: any) {
   const finalKey = `${key}:${encryptParams(params)}`;
-  return del(finalKey);
+  try {
+    await redis.del(finalKey);
+  } catch (error) {
+    console.error(`Erro ao deletar a chave ${finalKey}:`, error);
+  }
 }
 
-export function set(
+// Função para definir valores no Redis
+export async function set(
   key: string,
   value: string,
   option?: string,
   optionValue?: string | number
 ) {
-  if (option !== undefined && optionValue !== undefined) {
-    return redis.set(key, value, option, optionValue);
-  }
-  return redis.set(key, value);
-}
-
-export function get(key: string) {
-  return redis.get(key);
-}
-
-export function getKeys(pattern: string) {
-  return redis.keys(pattern);
-}
-
-export function del(key: string) {
-  return redis.del(key);
-}
-
-export async function delFromPattern(pattern: string) {
-  const stream = redis.scanStream({ match: pattern });
-  const keys: string[] = [];
-
-  stream.on("data", (resultKeys) => {
-    keys.push(...resultKeys);
-  });
-
-  stream.on("end", () => {
-    if (keys.length > 0) {
-      redis.del(keys);
+  try {
+    if (option !== undefined && optionValue !== undefined) {
+      await redis.set(key, value, option, optionValue);
+    } else {
+      await redis.set(key, value);
     }
-  });
-
-  return new Promise<void>((resolve) => {
-    stream.on("end", () => resolve());
-  });
+  } catch (error) {
+    console.error(`Erro ao definir o valor para a chave ${key}:`, error);
+  }
 }
 
+// Função para obter valores do Redis
+export async function get(key: string) {
+  try {
+    return await redis.get(key);
+  } catch (error) {
+    console.error(`Erro ao obter o valor para a chave ${key}:`, error);
+  }
+}
+
+// Função para obter chaves do Redis com base em um padrão
+export async function getKeys(pattern: string) {
+  try {
+    return await redis.keys(pattern);
+  } catch (error) {
+    console.error(`Erro ao obter chaves com padrão ${pattern}:`, error);
+  }
+}
+
+// Função para deletar uma chave do Redis
+export async function del(key: string) {
+  try {
+    await redis.del(key);
+  } catch (error) {
+    console.error(`Erro ao deletar a chave ${key}:`, error);
+  }
+}
+
+// Função para deletar chaves do Redis com base em um padrão
+export async function delFromPattern(pattern: string) {
+  try {
+    const all = await getKeys(pattern);
+    for (let item of all) {
+      await del(item);
+    }
+  } catch (error) {
+    console.error(`Erro ao deletar chaves com padrão ${pattern}:`, error);
+  }
+}
+
+// Exporta as funções para acesso externo
 export const cacheLayer = {
   set,
   setFromParams,
