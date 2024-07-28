@@ -1,7 +1,7 @@
 # Etapa de build
 FROM node:20-alpine AS build-deps
 WORKDIR /usr/src/app
-COPY package*.json package-lock.json ./
+COPY package*.json ./
 RUN npm install
 COPY . .
 RUN npm run build
