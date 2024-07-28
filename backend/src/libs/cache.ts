@@ -1,13 +1,12 @@
 import Redis from "ioredis";
 import { REDIS_URI_CONNECTION } from "../config/redis";
-import util from "util";
 import * as crypto from "crypto";
 
 const redis = new Redis(REDIS_URI_CONNECTION);
 
-function encryptParams(params: any) {
+function encryptParams(params: any): string {
   const str = JSON.stringify(params);
-  return crypto.createHash("sha256").update(str).digest("base64");
+  return crypto.createHash("sha256").update(str).digest("hex"); // Use hexadecimal encoding
 }
 
 export function setFromParams(
@@ -40,34 +39,41 @@ export function set(
   option?: string,
   optionValue?: string | number
 ) {
-  const setPromisefy = util.promisify(redis.set).bind(redis);
   if (option !== undefined && optionValue !== undefined) {
-    return setPromisefy(key, value, option, optionValue);
+    return redis.set(key, value, option, optionValue);
   }
-
-  return setPromisefy(key, value);
+  return redis.set(key, value);
 }
 
 export function get(key: string) {
-  const getPromisefy = util.promisify(redis.get).bind(redis);
-  return getPromisefy(key);
+  return redis.get(key);
 }
 
 export function getKeys(pattern: string) {
-  const getKeysPromisefy = util.promisify(redis.keys).bind(redis);
-  return getKeysPromisefy(pattern);
+  return redis.keys(pattern);
 }
 
 export function del(key: string) {
-  const delPromisefy = util.promisify(redis.del).bind(redis);
-  return delPromisefy(key);
+  return redis.del(key);
 }
 
 export async function delFromPattern(pattern: string) {
-  const all = await getKeys(pattern);
-  for (let item of all) {
-    del(item);
-  }
+  const stream = redis.scanStream({ match: pattern });
+  const keys: string[] = [];
+
+  stream.on("data", (resultKeys) => {
+    keys.push(...resultKeys);
+  });
+
+  stream.on("end", () => {
+    if (keys.length > 0) {
+      redis.del(keys);
+    }
+  });
+
+  return new Promise<void>((resolve) => {
+    stream.on("end", () => resolve());
+  });
 }
 
 export const cacheLayer = {
