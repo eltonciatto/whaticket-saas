@@ -16,7 +16,7 @@ import { i18n } from "../../translate/i18n";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import "../../assets/ReactToastify-BTGsrsBX.css";
 import "../../assets/styles-D9tTQ5bH.css";
-import "../../assets/background-animation.css"; // Importe o arquivo CSS da animação
+import "../../assets/background-animation.css";
 import logo from "../../assets/logo.png";
 
 const Copyright = () => {
@@ -37,59 +37,34 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: "center",
     textAlign: "center",
     position: "relative",
-    background:
-      "url(../../assets/background.png) no-repeat center center fixed",
-    backgroundSize: "cover",
   },
   paper: {
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: theme.palette.login,
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    padding: "40px 30px",
+    padding: "55px 30px",
     borderRadius: "12.5px",
     position: "relative",
     zIndex: 1,
-  },
-  avatar: {
-    margin: theme.spacing(1),
-    backgroundColor: theme.palette.secondary.main,
   },
   form: {
     width: "100%",
     marginTop: theme.spacing(1),
   },
   submit: {
-    margin: theme.spacing(2, 0, 1),
+    margin: theme.spacing(1, 0, 1),
   },
-  logoContainer: {
-    position: "absolute",
-    top: "-40px",
-    left: "50%",
-    transform: "translateX(-50%)",
-    width: "80px",
-    height: "80px",
-    backgroundColor: theme.palette.background.paper,
-    borderRadius: "50%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    boxShadow: theme.shadows[3],
-    zIndex: 2,
+  linkContainer: {
+    marginTop: theme.spacing(2),
   },
   logo: {
-    width: "70px",
-    height: "70px",
+    width: "80px", // Ajuste o tamanho da logo conforme necessário
+    position: "absolute",
+    top: "-40px", // Ajuste a posição da logo conforme necessário
+    backgroundColor: theme.palette.background.paper,
     borderRadius: "50%",
-  },
-  text: {
-    color: theme.palette.text.secondary,
-  },
-  footerText: {
-    marginTop: theme.spacing(3),
-  },
-  linkText: {
-    color: theme.palette.text.secondary,
+    padding: theme.spacing(1),
   },
 }));
 
@@ -109,15 +84,16 @@ const Login = () => {
 
   return (
     <div className={`${classes.root} animatedBackground`}>
+      {Array.from({ length: 19 }, (_, i) => (
+        <div key={i} className="line"></div>
+      ))}
+      {Array.from({ length: 19 }, (_, i) => (
+        <div key={i + 19} className="energy"></div>
+      ))}
       <Container component="main" maxWidth="xs">
         <CssBaseline />
-        <div className={classes.logoContainer}>
-          <img src={logo} alt="Logo" className={classes.logo} />
-        </div>
         <div className={classes.paper}>
-          <Typography component="h1" variant="h5" className={classes.text}>
-            Bem-vindo ao Sendbot
-          </Typography>
+          <img src={logo} alt="Whats" className={classes.logo} />
           <form className={classes.form} noValidate onSubmit={handleSubmit}>
             <TextField
               variant="outlined"
@@ -151,7 +127,7 @@ const Login = () => {
                   component={RouterLink}
                   to="/forgetpsw"
                   variant="body2"
-                  className={classes.text}
+                  color="textSecondary"
                 >
                   Esqueceu sua senha?
                 </Link>
@@ -174,30 +150,25 @@ const Login = () => {
               to="/signup"
               className={classes.submit}
             >
-              Criar Conta
+              {i18n.t("login.buttons.register")}
             </Button>
           </form>
-          <Box mt={3}>
-            <Typography variant="body2" className={classes.text} align="center">
+          <Box className={classes.linkContainer}>
+            <Typography variant="body2" color="textSecondary" align="center">
               Ao continuar, você concorda com os{" "}
-              <Link
-                className={classes.linkText}
-                href="https://sendbot.co/termos"
-              >
+              <Link color="textSecondary" href="https://sendbot.co/termos">
                 Termos de Serviço
               </Link>{" "}
               e a{" "}
               <Link
-                className={classes.linkText}
+                color="textSecondary"
                 href="https://sendbot.co/politica-de-privacidade"
               >
                 Política de Privacidade
               </Link>
               .
             </Typography>
-            <Box mt={2} className={classes.footerText}>
-              <Copyright />
-            </Box>
+            <Copyright />
           </Box>
         </div>
       </Container>
