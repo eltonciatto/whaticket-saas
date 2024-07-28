@@ -10,6 +10,14 @@ import "../../assets/styles-D9tTQ5bH.css";
 import "../../assets/background-animation.css"; // Importe o arquivo CSS da animação
 import logo from "../../assets/logo.png";
 
+const Copyright = () => {
+  return (
+    <Typography variant="body2" color="primary" align="center">
+      {"© Sendbot 2024 - Whaticket v4.8.5"}
+    </Typography>
+  );
+};
+
 const useStyles = makeStyles(theme => ({
   root: {
     width: "100vw",
@@ -40,13 +48,10 @@ const useStyles = makeStyles(theme => ({
     marginTop: theme.spacing(1),
   },
   submit: {
-    margin: theme.spacing(3, 0, 2),
+    margin: theme.spacing(2, 0, 1),
   },
   powered: {
     color: "white",
-  },
-  terms: {
-    marginTop: theme.spacing(2),
   },
 }));
 
@@ -76,7 +81,7 @@ const Login = () => {
         <CssBaseline />
         <div className={classes.paper}>
           <div>
-            <img style={{ margin: "0 auto", width: "100%", marginTop: "-50px" }} src={logo} alt="Whats" />
+            <img style={{ margin: "0 auto", width: "80%", position: "absolute", top: "-60px" }} src={logo} alt="Whats" />
           </div>
           <form className={classes.form} noValidate onSubmit={handleSubmit}>
             <TextField
@@ -122,29 +127,21 @@ const Login = () => {
               {i18n.t("login.buttons.submit")}
             </Button>
             <Button
-              component={RouterLink}
-              to="/signup"
               fullWidth
               variant="contained"
               color="primary"
               className={classes.submit}
+              component={RouterLink}
+              to="/signup"
             >
-              Criar Conta
+              {i18n.t("login.buttons.register").replace("Registrar-se", "Criar Conta")}
             </Button>
-            <Grid container>
-              <Grid item xs className={classes.terms}>
-                <Typography variant="body2" color="primary" align="center">
-                  Ao continuar, você concorda com os <Link color="primary" href="https://sendbot.co/termos">Termos de Serviço</Link> e a <Link color="primary" href="https://sendbot.co/politica-de-privacidade">Política de Privacidade</Link>.
-                </Typography>
-              </Grid>
-            </Grid>
           </form>
-        </div>
-        <Box mt={8}>
           <Typography variant="body2" color="primary" align="center">
-            © Sendbot 2024 - Whaticket v4.8.5
+            Ao continuar, você concorda com os <Link color="primary" href="https://sendbot.co/termos">Termos de Serviço</Link> e a <Link color="primary" href="https://sendbot.co/politica-de-privacidade">Política de Privacidade</Link>.
           </Typography>
-        </Box>
+          <Copyright />
+        </div>
       </Container>
     </div>
   );
