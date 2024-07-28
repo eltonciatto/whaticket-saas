@@ -23,7 +23,10 @@
       { "argsIgnorePattern": "_" }
     ],
     "import/prefer-default-export": "off",
-    "no-console": "off",
+    "no-console": [
+      "warn",
+      { "allow": ["warn", "error"] }
+    ],
     "no-param-reassign": "off",
     "prettier/prettier": "error",
     "import/extensions": [
@@ -34,7 +37,7 @@
       }
     ],
     "quotes": [
-      1,
+      "warn",
       "double",
       {
         "avoidEscape": true
