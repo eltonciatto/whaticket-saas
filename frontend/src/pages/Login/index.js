@@ -75,78 +75,79 @@ const Login = () => {
   };
 
   return (
-  <div className={`${classes.root} animatedBackground`}> {/* Adicione a classe da animação aqui */}
-    <div className="line"></div>
-    <div className="line"></div>
-    <div className="line"></div>
-    <div className="line"></div>
-    <div className="light"></div>
-    <div className="light"></div>
-    <div className="light"></div>
-    <div className="light"></div>
-    <Container component="main" maxWidth="xs">
-      <CssBaseline />
-      <div className={classes.paper}>
-        <div>
-          <img style={{ margin: "0 auto", width: "100%" }} src={logo} alt="Whats" />
+    <div className={`${classes.root} animatedBackground`}> {/* Adicione a classe da animação aqui */}
+      <div className="line"></div>
+      <div className="line"></div>
+      <div className="line"></div>
+      <div className="line"></div>
+      <div className="light"></div>
+      <div className="light"></div>
+      <div className="light"></div>
+      <div className="light"></div>
+      <Container component="main" maxWidth="xs">
+        <CssBaseline />
+        <div className={classes.paper}>
+          <div>
+            <img style={{ margin: "0 auto", width: "100%" }} src={logo} alt="Whats" />
+          </div>
+          <form className={classes.form} noValidate onSubmit={handleSubmit}>
+            <TextField
+              variant="outlined"
+              margin="normal"
+              required
+              fullWidth
+              id="email"
+              label={i18n.t("login.form.email")}
+              name="email"
+              value={user.email}
+              onChange={handleChangeInput}
+              autoComplete="email"
+              autoFocus
+            />
+            <TextField
+              variant="outlined"
+              margin="normal"
+              required
+              fullWidth
+              name="password"
+              label={i18n.t("login.form.password")}
+              type="password"
+              id="password"
+              value={user.password}
+              onChange={handleChangeInput}
+              autoComplete="current-password"
+            />
+            <Grid container justifyContent="flex-end">
+              <Grid item xs={6} style={{ textAlign: "right" }}>
+                <Link component={RouterLink} to="/forgetpsw" variant="body2">
+                  Esqueceu sua senha?
+                </Link>
+              </Grid>
+            </Grid>
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              color="primary"
+              className={classes.submit}
+            >
+              {i18n.t("login.buttons.submit")}
+            </Button>
+            <Grid container>
+              <Grid item>
+                <Link href="#" variant="body2" component={RouterLink} to="/signup">
+                  {i18n.t("login.buttons.register")}
+                </Link>
+              </Grid>
+            </Grid>
+          </form>
         </div>
-        <form className={classes.form} noValidate onSubmit={handleSubmit}>
-          <TextField
-            variant="outlined"
-            margin="normal"
-            required
-            fullWidth
-            id="email"
-            label={i18n.t("login.form.email")}
-            name="email"
-            value={user.email}
-            onChange={handleChangeInput}
-            autoComplete="email"
-            autoFocus
-          />
-          <TextField
-            variant="outlined"
-            margin="normal"
-            required
-            fullWidth
-            name="password"
-            label={i18n.t("login.form.password")}
-            type="password"
-            id="password"
-            value={user.password}
-            onChange={handleChangeInput}
-            autoComplete="current-password"
-          />
-          <Grid container justifyContent="flex-end">
-            <Grid item xs={6} style={{ textAlign: "right" }}>
-              <Link component={RouterLink} to="/forgetpsw" variant="body2">
-                Esqueceu sua senha?
-              </Link>
-            </Grid>
-          </Grid>
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            color="primary"
-            className={classes.submit}
-          >
-            {i18n.t("login.buttons.submit")}
-          </Button>
-          <Grid container>
-            <Grid item>
-              <Link href="#" variant="body2" component={RouterLink} to="/signup">
-                {i18n.t("login.buttons.register")}
-              </Link>
-            </Grid>
-          </Grid>
-        </form>
-      </div>
-      <Box mt={8}>
-        <Copyright />
-      </Box>
-    </Container>
-  </div>
-);
+        <Box mt={8}>
+          <Copyright />
+        </Box>
+      </Container>
+    </div>
+  );
+};
 
 export default Login;
