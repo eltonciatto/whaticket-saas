@@ -42,11 +42,11 @@ const useStyles = makeStyles((theme) => ({
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    padding: "35px 20px", // Diminuir o padding
+    padding: "35px 20px",
     borderRadius: "12.5px",
     position: "relative",
     zIndex: 1,
-    marginTop: theme.spacing(4), // Ajustar o marginTop
+    marginTop: theme.spacing(4),
   },
   form: {
     width: "100%",
@@ -67,6 +67,10 @@ const useStyles = makeStyles((theme) => ({
   },
   welcomeText: {
     marginBottom: theme.spacing(2),
+  },
+  selectMenu: {
+    maxHeight: 200,
+    overflowY: "auto",
   },
 }));
 
@@ -190,7 +194,7 @@ const SignUp = () => {
                           {...field}
                           variant="outlined"
                           fullWidth
-                          label="exemplo: 11 980004000"
+                          label="DDD988888888"
                           inputProps={{ maxLength: 11 }}
                         />
                       )}
@@ -212,12 +216,15 @@ const SignUp = () => {
                   </Grid>
                   <Grid item xs={12}>
                     <FormControl variant="outlined" fullWidth>
-                      <InputLabel htmlFor="plan-selection">Escolha o Plano</InputLabel>
+                      <InputLabel htmlFor="plan-selection">Plano</InputLabel>
                       <Field
                         as={Select}
                         id="plan-selection"
                         name="planId"
                         label="Plano"
+                        MenuProps={{
+                          classes: { paper: classes.selectMenu },
+                        }}
                       >
                         {plans.map((plan) => (
                           <MenuItem key={plan.id} value={plan.id}>
