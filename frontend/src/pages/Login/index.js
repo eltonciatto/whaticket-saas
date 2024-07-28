@@ -1,6 +1,15 @@
 import React, { useState, useContext } from "react";
 import { Link as RouterLink } from "react-router-dom";
-import { Button, CssBaseline, TextField, Link, Grid, Box, Typography, Container } from "@material-ui/core";
+import {
+  Button,
+  CssBaseline,
+  TextField,
+  Link,
+  Grid,
+  Box,
+  Typography,
+  Container,
+} from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { versionSystem, nomeEmpresa } from "../../../package.json";
 import { i18n } from "../../translate/i18n";
@@ -18,7 +27,7 @@ const Copyright = () => {
   );
 };
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     width: "100vw",
     height: "100vh",
@@ -28,8 +37,9 @@ const useStyles = makeStyles(theme => ({
     justifyContent: "center",
     textAlign: "center",
     position: "relative",
-    background: "url(../../assets/background.png) no-repeat center center fixed",
-    backgroundSize: "cover"
+    background:
+      "url(../../assets/background.png) no-repeat center center fixed",
+    backgroundSize: "cover",
   },
   paper: {
     backgroundColor: theme.palette.background.paper,
@@ -65,16 +75,22 @@ const useStyles = makeStyles(theme => ({
     alignItems: "center",
     justifyContent: "center",
     boxShadow: theme.shadows[3],
-    zIndex: 2
+    zIndex: 2,
   },
   logo: {
     width: "70px",
     height: "70px",
-    borderRadius: "50%"
+    borderRadius: "50%",
   },
   text: {
-    color: theme.palette.text.secondary
-  }
+    color: theme.palette.text.secondary,
+  },
+  footerText: {
+    marginTop: theme.spacing(3),
+  },
+  linkText: {
+    color: theme.palette.text.secondary,
+  },
 }));
 
 const Login = () => {
@@ -131,7 +147,12 @@ const Login = () => {
             />
             <Grid container justifyContent="flex-end">
               <Grid item xs={6} style={{ textAlign: "right" }}>
-                <Link component={RouterLink} to="/forgetpsw" variant="body2" className={classes.text}>
+                <Link
+                  component={RouterLink}
+                  to="/forgetpsw"
+                  variant="body2"
+                  className={classes.text}
+                >
                   Esqueceu sua senha?
                 </Link>
               </Grid>
@@ -158,9 +179,23 @@ const Login = () => {
           </form>
           <Box mt={3}>
             <Typography variant="body2" className={classes.text} align="center">
-              Ao continuar, você concorda com os <Link color="inherit" href="https://sendbot.co/termos">Termos de Serviço</Link> e a <Link color="inherit" href="https://sendbot.co/politica-de-privacidade">Política de Privacidade</Link>.
+              Ao continuar, você concorda com os{" "}
+              <Link
+                className={classes.linkText}
+                href="https://sendbot.co/termos"
+              >
+                Termos de Serviço
+              </Link>{" "}
+              e a{" "}
+              <Link
+                className={classes.linkText}
+                href="https://sendbot.co/politica-de-privacidade"
+              >
+                Política de Privacidade
+              </Link>
+              .
             </Typography>
-            <Box mt={2}>
+            <Box mt={2} className={classes.footerText}>
               <Copyright />
             </Box>
           </Box>
