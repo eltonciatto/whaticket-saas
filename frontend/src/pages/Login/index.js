@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react";
 import { Link as RouterLink } from "react-router-dom";
-import { Button, CssBaseline, TextField, Link, Grid, Typography, Container } from "@material-ui/core";
+import { Button, CssBaseline, TextField, Link, Grid, Typography, Container, Box } from "@material-ui/core"; // Adicionei o Box aqui
 import { makeStyles } from "@material-ui/core/styles";
 import { versionSystem, nomeEmpresa } from "../../../package.json";
 import { i18n } from "../../translate/i18n";
