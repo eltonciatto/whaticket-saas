@@ -51,7 +51,10 @@ const useStyles = makeStyles((theme) => ({
     marginTop: theme.spacing(1),
   },
   submit: {
-    margin: theme.spacing(3, 0, 2),
+    margin: theme.spacing(1, 0, 1),
+  },
+  linkContainer: {
+    marginTop: theme.spacing(2),
   },
   logo: {
     width: "80px",
@@ -60,6 +63,9 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: "0%",
     padding: theme.spacing(1),
   },
+  welcomeText: {
+    marginBottom: theme.spacing(2),
+  },
 }));
 
 const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
@@ -67,6 +73,7 @@ const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
 const ForgetPassword = () => {
   const classes = useStyles();
   const history = useHistory();
+  let companyId = null;
   const [showAdditionalFields, setShowAdditionalFields] = useState(false);
   const [showResetPasswordButton, setShowResetPasswordButton] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -90,7 +97,15 @@ const ForgetPassword = () => {
     }
   };
 
+  const params = qs.parse(window.location.search);
+  if (params.companyId !== undefined) {
+    companyId = params.companyId;
+  }
+
   const initialState = { email: "" };
+
+  const [user] = useState(initialState);
+  const dueDate = moment().add(3, "day").format();
 
   const handleSendEmail = async (values) => {
     const email = values.email;
@@ -98,18 +113,24 @@ const ForgetPassword = () => {
       const response = await api.post(
         `${process.env.REACT_APP_BACKEND_URL}/forgetpassword/${email}`
       );
+      console.log("API Response:", response.data);
+
       if (response.data.status === 404) {
         toast.error("Email não encontrado");
       } else {
         toast.success(i18n.t("Email enviado com sucesso!"));
       }
     } catch (err) {
+      console.log("API Error:", err);
       toastError(err);
     }
   };
 
   const handleResetPassword = async (values) => {
-    const { email, token, newPassword, confirmPassword } = values;
+    const email = values.email;
+    const token = values.token;
+    const newPassword = values.newPassword;
+    const confirmPassword = values.confirmPassword;
 
     if (newPassword === confirmPassword) {
       try {
@@ -120,10 +141,8 @@ const ForgetPassword = () => {
         toast.success(i18n.t("Senha redefinida com sucesso."));
         history.push("/login");
       } catch (err) {
-        toastError(err);
+        console.log(err);
       }
-    } else {
-      setError("As senhas não correspondem.");
     }
   };
 
@@ -149,11 +168,17 @@ const ForgetPassword = () => {
 
   return (
     <div className={`${classes.root} animatedBackground`}>
+      {Array.from({ length: 19 }, (_, i) => (
+        <div key={i} className="line"></div>
+      ))}
+      {Array.from({ length: 19 }, (_, i) => (
+        <div key={i + 19} className="energy"></div>
+      ))}
       <Container component="main" maxWidth="xs">
         <CssBaseline />
         <div className={classes.paper}>
           <img src={logo} alt="Whats" className={classes.logo} />
-          <Typography component="h1" variant="h5">
+          <Typography variant="h5" className={classes.welcomeText}>
             {i18n.t("Redefinir senha")}
           </Typography>
           <Formik
@@ -305,7 +330,7 @@ const ForgetPassword = () => {
                     Enviar Email
                   </Button>
                 )}
-                <Grid container justifyContent="flex-end">
+                <Grid container justifyContent="flex-end" className={classes.linkContainer}>
                   <Grid item>
                     <Link
                       href="#"
