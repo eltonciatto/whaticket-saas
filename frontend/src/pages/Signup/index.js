@@ -86,6 +86,7 @@ const SignUp = () => {
   const history = useHistory();
   const [plans, setPlans] = useState([]);
   const { list: listPlans } = usePlans();
+  const [selectedPlan, setSelectedPlan] = useState(null); // Estado para o plano selecionado
   const dueDate = moment().add(3, "day").format();
   const params = qs.parse(window.location.search);
   const companyId = params.companyId || null;
@@ -228,13 +229,34 @@ const SignUp = () => {
                       >
                         {plans.map((plan) => (
                           <MenuItem key={plan.id} value={plan.id}>
-                            {plan.name} - Atendentes: {plan.users} - WhatsApp: {plan.connections} - Filas: {plan.queues} - R$ {plan.value}
+                            {plan.name} - R$ {plan.value}
+                            <Button 
+                              onClick={() => setSelectedPlan(plan)}
+                              variant="contained"
+                              color="primary"
+                              style={{ marginLeft: 10 }}
+                            >
+                              Ver detalhes
+                            </Button>
                           </MenuItem>
                         ))}
                       </Field>
                     </FormControl>
                   </Grid>
                 </Grid>
+                {selectedPlan && (
+                  <Box mt={2}>
+                    <Typography variant="h6">
+                      Detalhes do Plano: {selectedPlan.name}
+                    </Typography>
+                    <Typography variant="body1">
+                      Atendentes: {selectedPlan.users} <br />
+                      WhatsApp: {selectedPlan.connections} <br />
+                      Filas: {selectedPlan.queues} <br />
+                      Valor: R$ {selectedPlan.value}
+                    </Typography>
+                  </Box>
+                )}
                 <Button
                   type="submit"
                   fullWidth
