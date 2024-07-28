@@ -247,18 +247,18 @@ const SignUp = () => {
                 {selectedPlan && (
                   <Box mt={2}>
                     <Typography variant="h6">
-                      Detalhes do Plano: {selectedPlan.name}
+                      Detalhes do {selectedPlan.name}
                     </Typography>
                     <Typography variant="body1">
                       Atendentes: {selectedPlan.users} <br />
                       WhatsApp: {selectedPlan.connections} <br />
                       Filas: {selectedPlan.queues} <br />
-                      ✅ Kanban -
-                      ✅ DialogFlow -
-                      ✅ N8N - <br />
-                      ✅ WebHooks -
-                      ✅ TypeBot -
-                      ✅ ChatGPT
+                      Kanban ✅ -
+                      DialogFlow ✅ -
+                      N8N ✅ - <br />
+                      WebHooks ✅ -
+                      TypeBot ✅ -
+                      ChatGPT ✅
                     </Typography>
                   </Box>
                 )}
