@@ -7,7 +7,7 @@ import { i18n } from "../../translate/i18n";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import "../../assets/ReactToastify-BTGsrsBX.css";
 import "../../assets/styles-D9tTQ5bH.css";
-import "../../assets/background-animation.css";
+import "../../assets/background-animation.css"; // Importe o arquivo CSS da animação
 import logo from "../../assets/logo.png";
 
 const Copyright = () => {
@@ -18,7 +18,7 @@ const Copyright = () => {
   );
 };
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
   root: {
     width: "100vw",
     height: "100vh",
@@ -28,35 +28,53 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: "center",
     textAlign: "center",
     position: "relative",
+    background: "url(../../assets/background.png) no-repeat center center fixed",
+    backgroundSize: "cover"
   },
   paper: {
-    backgroundColor: theme.palette.login,
+    backgroundColor: theme.palette.background.paper,
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    padding: "55px 30px",
+    padding: "40px 30px",
     borderRadius: "12.5px",
     position: "relative",
     zIndex: 1,
+  },
+  avatar: {
+    margin: theme.spacing(1),
+    backgroundColor: theme.palette.secondary.main,
   },
   form: {
     width: "100%",
     marginTop: theme.spacing(1),
   },
   submit: {
-    margin: theme.spacing(1, 0, 1),
+    margin: theme.spacing(2, 0, 1),
   },
-  linkContainer: {
-    marginTop: theme.spacing(2),
-  },
-  logo: {
-    width: "80px", // Ajuste o tamanho da logo conforme necessário
+  logoContainer: {
     position: "absolute",
-    top: "-40px", // Ajuste a posição da logo conforme necessário
+    top: "-40px",
+    left: "50%",
+    transform: "translateX(-50%)",
+    width: "80px",
+    height: "80px",
     backgroundColor: theme.palette.background.paper,
     borderRadius: "50%",
-    padding: theme.spacing(1),
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: theme.shadows[3],
+    zIndex: 2
   },
+  logo: {
+    width: "70px",
+    height: "70px",
+    borderRadius: "50%"
+  },
+  text: {
+    color: theme.palette.text.secondary
+  }
 }));
 
 const Login = () => {
@@ -75,16 +93,15 @@ const Login = () => {
 
   return (
     <div className={`${classes.root} animatedBackground`}>
-      {Array.from({ length: 19 }, (_, i) => (
-        <div key={i} className="line"></div>
-      ))}
-      {Array.from({ length: 19 }, (_, i) => (
-        <div key={i + 19} className="energy"></div>
-      ))}
       <Container component="main" maxWidth="xs">
         <CssBaseline />
+        <div className={classes.logoContainer}>
+          <img src={logo} alt="Logo" className={classes.logo} />
+        </div>
         <div className={classes.paper}>
-          <img src={logo} alt="Whats" className={classes.logo} />
+          <Typography component="h1" variant="h5" className={classes.text}>
+            Bem-vindo ao Sendbot
+          </Typography>
           <form className={classes.form} noValidate onSubmit={handleSubmit}>
             <TextField
               variant="outlined"
@@ -114,7 +131,7 @@ const Login = () => {
             />
             <Grid container justifyContent="flex-end">
               <Grid item xs={6} style={{ textAlign: "right" }}>
-                <Link component={RouterLink} to="/forgetpsw" variant="body2" color="textSecondary">
+                <Link component={RouterLink} to="/forgetpsw" variant="body2" className={classes.text}>
                   Esqueceu sua senha?
                 </Link>
               </Grid>
@@ -136,14 +153,16 @@ const Login = () => {
               to="/signup"
               className={classes.submit}
             >
-              {i18n.t("login.buttons.register")}
+              Criar Conta
             </Button>
           </form>
-          <Box className={classes.linkContainer}>
-            <Typography variant="body2" color="textSecondary" align="center">
-              Ao continuar, você concorda com os <Link color="textSecondary" href="https://sendbot.co/termos">Termos de Serviço</Link> e a <Link color="textSecondary" href="https://sendbot.co/politica-de-privacidade">Política de Privacidade</Link>.
+          <Box mt={3}>
+            <Typography variant="body2" className={classes.text} align="center">
+              Ao continuar, você concorda com os <Link color="inherit" href="https://sendbot.co/termos">Termos de Serviço</Link> e a <Link color="inherit" href="https://sendbot.co/politica-de-privacidade">Política de Privacidade</Link>.
             </Typography>
-            <Copyright />
+            <Box mt={2}>
+              <Copyright />
+            </Box>
           </Box>
         </div>
       </Container>
