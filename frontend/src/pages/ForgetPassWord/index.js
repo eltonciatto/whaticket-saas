@@ -20,47 +20,45 @@ import Container from "@material-ui/core/Container";
 import api from "../../services/api";
 import { i18n } from "../../translate/i18n";
 import moment from "moment";
-import logo from "../../assets/logo.png";
+import logo from "../../assets/sendbot-logo4-500x.png";
 import { toast } from 'react-toastify'; 
 import toastError from '../../errors/toastError';
 import 'react-toastify/dist/ReactToastify.css';
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   root: {
     width: "100vw",
     height: "100vh",
-    background: "black", //Cor de fundo
-    backgroundRepeat: "no-repeat",
-    backgroundSize: "100% 100%",
-    backgroundPosition: "center",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
     textAlign: "center",
+    position: "relative",
   },
   paper: {
-    backgroundColor: "white",
+    backgroundColor: theme.palette.login,
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     padding: "55px 30px",
     borderRadius: "12.5px",
-  },
-  avatar: {
-    margin: theme.spacing(1),
-    backgroundColor: theme.palette.secondary.main,
+    position: "relative",
+    zIndex: 1,
   },
   form: {
-    width: "100%", // Fix IE 11 issue.
+    width: "100%",
     marginTop: theme.spacing(1),
   },
   submit: {
     margin: theme.spacing(3, 0, 2),
   },
-  powered: {
-    color: "white",
+  logo: {
+    width: "80px",
+    position: "absolute",
+    top: "-40px",
+    borderRadius: "0%",
+    padding: theme.spacing(1),
   },
 }));
 
@@ -69,12 +67,11 @@ const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
 const ForgetPassword = () => {
   const classes = useStyles();
   const history = useHistory();
-  let companyId = null;
   const [showAdditionalFields, setShowAdditionalFields] = useState(false);
   const [showResetPasswordButton, setShowResetPasswordButton] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState(""); // Estado para mensagens de erro
+  const [error, setError] = useState("");
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -93,52 +90,40 @@ const ForgetPassword = () => {
     }
   };
 
-  const params = qs.parse(window.location.search);
-  if (params.companyId !== undefined) {
-    companyId = params.companyId;
-  }
-
   const initialState = { email: "" };
 
-  const [user] = useState(initialState);
-  const dueDate = moment().add(3, "day").format();
-
-const handleSendEmail = async (values) => {
-  const email = values.email;
-  try {
-    const response = await api.post(
-      `${process.env.REACT_APP_BACKEND_URL}/forgetpassword/${email}`
-    );
-    console.log("API Response:", response.data);
-
-    if (response.data.status === 404) {
-      toast.error("Email não encontrado");
-    } else {
-      toast.success(i18n.t("Email enviado com sucesso!"));
+  const handleSendEmail = async (values) => {
+    const email = values.email;
+    try {
+      const response = await api.post(
+        `${process.env.REACT_APP_BACKEND_URL}/forgetpassword/${email}`
+      );
+      if (response.data.status === 404) {
+        toast.error("Email não encontrado");
+      } else {
+        toast.success(i18n.t("Email enviado com sucesso!"));
+      }
+    } catch (err) {
+      toastError(err);
     }
-  } catch (err) {
-    console.log("API Error:", err);
-    toastError(err);
-  }
-};
+  };
 
   const handleResetPassword = async (values) => {
-    const email = values.email;
-    const token = values.token;
-    const newPassword = values.newPassword;
-    const confirmPassword = values.confirmPassword;
+    const { email, token, newPassword, confirmPassword } = values;
 
     if (newPassword === confirmPassword) {
       try {
         await api.post(
           `${process.env.REACT_APP_BACKEND_URL}/resetpasswords/${email}/${token}/${newPassword}`
         );
-        setError(""); // Limpe o erro se não houver erro
+        setError("");
         toast.success(i18n.t("Senha redefinida com sucesso."));
         history.push("/login");
       } catch (err) {
-        console.log(err);
+        toastError(err);
       }
+    } else {
+      setError("As senhas não correspondem.");
     }
   };
 
@@ -152,28 +137,22 @@ const handleSendEmail = async (values) => {
             passwordRegex,
             "Sua senha precisa ter no mínimo 8 caracteres, sendo uma letra maiúscula, uma minúscula e um número."
           )
-      : Yup.string(), // Sem validação se não for redefinição de senha
+      : Yup.string(),
     confirmPassword: Yup.string().when("newPassword", {
       is: (newPassword) => isResetPasswordButtonClicked && newPassword,
       then: Yup.string()
         .oneOf([Yup.ref("newPassword"), null], "As senhas não correspondem")
         .required("Campo obrigatório"),
-      otherwise: Yup.string(), // Sem validação se não for redefinição de senha
+      otherwise: Yup.string(),
     }),
   });
 
   return (
-    <div className={classes.root}>
+    <div className={`${classes.root} animatedBackground`}>
       <Container component="main" maxWidth="xs">
         <CssBaseline />
         <div className={classes.paper}>
-          <div>
-            <img
-              style={{ margin: "0 auto", height: "80px", width: "100%" }}
-              src={logo}
-              alt="Whats"
-            />
-          </div>
+          <img src={logo} alt="Whats" className={classes.logo} />
           <Typography component="h1" variant="h5">
             {i18n.t("Redefinir senha")}
           </Typography>
