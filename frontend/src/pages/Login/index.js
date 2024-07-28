@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react";
 import { Link as RouterLink } from "react-router-dom";
-import { Button, CssBaseline, TextField, Link, Grid, Typography, Container, Box } from "@material-ui/core"; // Adicionei o Box aqui
+import { Button, CssBaseline, TextField, Link, Grid, Box, Typography, Container } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { versionSystem, nomeEmpresa } from "../../../package.json";
 import { i18n } from "../../translate/i18n";
@@ -127,12 +127,23 @@ const Login = () => {
               fullWidth
               variant="contained"
               color="primary"
+              className={classes.submit}
             >
-              {i18n.t("login.form.submit")}
+              {i18n.t("login.buttons.submit")}
             </Button>
+            <Grid container>
+              <Grid item>
+                <Link href="#" variant="body2" component={RouterLink} to="/signup">
+                  {i18n.t("login.buttons.register")}
+                </Link>
+              </Grid>
+            </Grid>
           </form>
         </div>
         <Box mt={8}>
+          <Typography variant="body2" color="primary" align="center">
+            Ao continuar, você concorda com os <Link color="primary" href="https://sendbot.co/termos">Termos de Serviço</Link> e a <Link color="primary" href="https://sendbot.co/politica-de-privacidade">Política de Privacidade</Link>.
+          </Typography>
           <Copyright />
         </Box>
       </Container>
