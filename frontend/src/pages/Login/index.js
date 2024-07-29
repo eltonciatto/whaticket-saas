@@ -14,8 +14,6 @@ import { makeStyles } from "@material-ui/core/styles";
 import { versionSystem, nomeEmpresa } from "../../../package.json";
 import { i18n } from "../../translate/i18n";
 import { AuthContext } from "../../context/Auth/AuthContext";
-import "../../assets/ReactToastify-BTGsrsBX.css";
-import "../../assets/styles-D9tTQ5bH.css";
 import "../../assets/background-animation.css";
 import logo from "../../assets/sendbot-logo4-500x.png";
 
