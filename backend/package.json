@@ -4,6 +4,7 @@
   "description": "",
   "main": "dist/server.js",
   "scripts": {
+    "prebuild": "npm install --omit=dev",
     "build": "tsc",
     "watch": "tsc -w",
     "start": "node dist/server.js",
