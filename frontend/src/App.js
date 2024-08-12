@@ -31,58 +31,56 @@ const App = () => {
 
     const theme = createTheme(
         {
-            scrollbarStyles: {
-                "&::-webkit-scrollbar": {
-                    width: '8px',
-                    height: '8px',
-                },
-                "&::-webkit-scrollbar-thumb": {
-                    boxShadow: 'inset 0 0 6px rgba(0, 0, 0, 0.3)',
-                    backgroundColor: "#2DDD7F",
-                },
-            },
-            scrollbarStylesSoft: {
-                "&::-webkit-scrollbar": {
-                    width: "8px",
-                },
-                "&::-webkit-scrollbar-thumb": {
-                    backgroundColor: mode === "light" ? "#F3F3F3" : "#333333",
-                },
-            },
-            palette: {
-                type: mode,
-                primary: { main: mode === "light" ? "#2DDD7F" : "#FFFFFF" },
-                textPrimary: mode === "light" ? "#2DDD7F" : "#FFFFFF",
-                borderPrimary: mode === "light" ? "#2DDD7F" : "#FFFFFF",
-                dark: { main: mode === "light" ? "#333333" : "#F3F3F3" },
-                light: { main: mode === "light" ? "#F3F3F3" : "#333333" },
-                tabHeaderBackground: mode === "light" ? "#EEE" : "#666",
-                optionsBackground: mode === "light" ? "#fafafa" : "#333",
-				options: mode === "light" ? "#fafafa" : "#666",
-				fontecor: mode === "light" ? "#128c7e" : "#fff",
-                fancyBackground: mode === "light" ? "#fafafa" : "#333",
-				bordabox: mode === "light" ? "#eee" : "#333",
-				newmessagebox: mode === "light" ? "#eee" : "#333",
-				inputdigita: mode === "light" ? "#fff" : "#666",
-				contactdrawer: mode === "light" ? "#fff" : "#666",
-				announcements: mode === "light" ? "#ededed" : "#333",
-				login: mode === "light" ? "#fff" : "#1C1C1C",
-				announcementspopover: mode === "light" ? "#fff" : "#666",
-				chatlist: mode === "light" ? "#eee" : "#666",
-				boxlist: mode === "light" ? "#ededed" : "#666",
-				boxchatlist: mode === "light" ? "#ededed" : "#333",
-                total: mode === "light" ? "#fff" : "#222",
-                messageIcons: mode === "light" ? "grey" : "#F3F3F3",
-                inputBackground: mode === "light" ? "#FFFFFF" : "#333",
-                barraSuperior: mode === "light" ? "linear-gradient(to right, #2DDD7F, #2DDD7F , #2DDD7F)" : "#666",
-				boxticket: mode === "light" ? "#EEE" : "#666",
-				campaigntab: mode === "light" ? "#ededed" : "#666",
-				mediainput: mode === "light" ? "#ededed" : "#1c1c1c",
-            },
-            mode,
+    scrollbarStyles: {
+        "&::-webkit-scrollbar": {
+            width: '8px',
+            height: '8px',
         },
-        locale
-    );
+        "&::-webkit-scrollbar-thumb": {
+            boxShadow: 'inset 0 0 6px rgba(0, 0, 0, 0.3)',
+            backgroundColor: "#075E54",  // Verde escuro, evocando a identidade visual do WhatsApp
+        },
+    },
+    scrollbarStylesSoft: {
+        "&::-webkit-scrollbar": {
+            width: "8px",
+        },
+        "&::-webkit-scrollbar-thumb": {
+            backgroundColor: mode === "light" ? "#E0E0E0" : "#404040",  // Tons neutros, cinza claro e escuro
+        },
+    },
+    palette: {
+        type: mode,
+        primary: { main: mode === "light" ? "#25D366" : "#128C7E" },  // Verdes icônicos do WhatsApp, claro e escuro
+        textPrimary: mode === "light" ? "#075E54" : "#ECECEC",  // Texto em verde escuro no modo claro e cinza claro no modo escuro
+        borderPrimary: mode === "light" ? "#25D366" : "#128C7E",  // Verde claro e escuro para bordas
+        dark: { main: mode === "light" ? "#075E54" : "#ECECEC" },  // Verde escuro e cinza claro
+        light: { main: mode === "light" ? "#ECECEC" : "#075E54" },  // Cinza claro e verde escuro
+        tabHeaderBackground: mode === "light" ? "#F0F0F0" : "#404040",  // Cinza claro e cinza escuro
+        optionsBackground: mode === "light" ? "#F7F7F7" : "#2D2D2D",  // Tons suaves e profissionais
+        options: mode === "light" ? "#075E54" : "#ECECEC",  // Texto em verde escuro e cinza claro
+        fontecor: mode === "light" ? "#128C7E" : "#ECECEC",  // Verde médio e cinza claro para texto
+        fancyBackground: mode === "light" ? "#F7F7F7" : "#2D2D2D",  // Fundo em tons suaves
+        bordabox: mode === "light" ? "#DADADA" : "#404040",  // Cinza neutro
+        newmessagebox: mode === "light" ? "#ECECEC" : "#404040",  // Cinza claro e cinza escuro
+        inputdigita: mode === "light" ? "#FFFFFF" : "#2D2D2D",  // Branco e cinza escuro
+        contactdrawer: mode === "light" ? "#FFFFFF" : "#2D2D2D",  // Branco e cinza escuro
+        announcements: mode === "light" ? "#ECECEC" : "#404040",  // Cinza claro e cinza escuro
+        login: mode === "light" ? "#FFFFFF" : "#1C1C1C",  // Branco e preto para login
+        announcementspopover: mode === "light" ? "#FFFFFF" : "#2D2D2D",  // Branco e cinza escuro
+        chatlist: mode === "light" ? "#ECECEC" : "#404040",  // Cinza claro e cinza escuro
+        boxlist: mode === "light" ? "#ECECEC" : "#404040",  // Cinza claro e cinza escuro
+        boxchatlist: mode === "light" ? "#ECECEC" : "#2D2D2D",  // Cinza claro e cinza escuro
+        total: mode === "light" ? "#FFFFFF" : "#1C1C1C",  // Branco e preto
+        messageIcons: mode === "light" ? "#B3B3B3" : "#ECECEC",  // Cinza médio e cinza claro
+        inputBackground: mode === "light" ? "#FFFFFF" : "#2D2D2D",  // Branco e cinza escuro
+        barraSuperior: mode === "light" ? "linear-gradient(to right, #25D366, #128C7E)" : "#2D2D2D",  // Verde gradiente e cinza escuro
+        boxticket: mode === "light" ? "#ECECEC" : "#404040",  // Cinza claro e cinza escuro
+        campaigntab: mode === "light" ? "#ECECEC" : "#404040",  // Cinza claro e cinza escuro
+        mediainput: mode === "light" ? "#ECECEC" : "#1C1C1C",  // Cinza claro e preto
+    },
+    mode,
+}
 
     useEffect(() => {
         const i18nlocale = localStorage.getItem("i18nextLng");
