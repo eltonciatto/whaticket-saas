@@ -4,7 +4,7 @@ _replaceFrontendEnvVars() {
     echo "Procurando arquivos contendo variáveis a serem substituídas..."
 
     # Encontra todos os arquivos que contêm as variáveis ou URLs específicas
-    FILES=$(grep -rl "hours_ticket_close_auto\|https://api.example.com" /usr/src/app/build)
+    FILES=$(grep -rl "hours_ticket_close_auto\|https://api-whaticket.sendbot.co/" /usr/src/app/build)
 
     if [ -z "$FILES" ]; then
         echo "Nenhum arquivo contendo as ocorrências específicas encontrado."
@@ -20,7 +20,7 @@ _replaceFrontendEnvVars() {
 
         # Substituir as variáveis e URLs nos arquivos
         sed -i "s/hours_ticket_close_auto/${ESCAPED_REACT_APP_HOURS_CLOSE_TICKETS_AUTO}/g" "$FILE"
-        sed -i "s|https://api.example.com|${ESCAPED_REACT_APP_BACKEND_URL}|g" "$FILE"
+        sed -i "s|https://api-whaticket.sendbot.co/|${ESCAPED_REACT_APP_BACKEND_URL}|g" "$FILE"
 
         echo "$FILE modificado com sucesso."
     done
