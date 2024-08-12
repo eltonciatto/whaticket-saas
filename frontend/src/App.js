@@ -79,9 +79,10 @@ const App = () => {
         campaigntab: mode === "light" ? "#ECECEC" : "#404040",
         mediainput: mode === "light" ? "#ECECEC" : "#1C1C1C",
     },
-    mode,
-}
-
+            mode,
+        },
+        locale
+    );
     useEffect(() => {
         const i18nlocale = localStorage.getItem("i18nextLng");
         const browserLocale =
