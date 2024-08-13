@@ -1,6 +1,5 @@
 import React, { useState, useContext, useEffect } from "react";
 import clsx from "clsx";
-import moment from "moment";
 import {
   makeStyles,
   Drawer,
@@ -35,8 +34,6 @@ import logo from "../assets/logo.png";
 import { SocketContext } from "../context/Socket/SocketContext";
 import ChatPopover from "../pages/Chat/ChatPopover";
 
-import { useDate } from "../hooks/useDate";
-
 import ColorModeContext from "../layout/themeContext";
 import Brightness4Icon from '@material-ui/icons/Brightness4';
 import Brightness7Icon from '@material-ui/icons/Brightness7';
@@ -63,8 +60,8 @@ const useStyles = makeStyles((theme) => ({
     width: "100%",
   },
   toolbar: {
-    paddingRight: 24, // keep right padding when drawer closed
-    color: theme.palette.dark.main,
+    paddingRight: 24,
+    color: "white",
     background: theme.palette.barraSuperior,
   },
   toolbarIcon: {
@@ -97,14 +94,16 @@ const useStyles = makeStyles((theme) => ({
   },
   menuButton: {
     marginRight: 36,
+    color: "white",
   },
   menuButtonHidden: {
     display: "none",
   },
   title: {
     flexGrow: 1,
-    fontSize: 14,
+    fontSize: 16,
     color: "white",
+    fontWeight: "bold",
   },
   drawerPaper: {
     position: "relative",
@@ -156,9 +155,7 @@ const useStyles = makeStyles((theme) => ({
     overflowY: "scroll",
     ...theme.scrollbarStyles,
   },
-  NotificationsPopOver: {
-    // color: theme.barraSuperior.secondary.main,
-  },
+  NotificationsPopOver: {},
   logo: {
     width: "80%",
     height: "auto",
@@ -171,11 +168,14 @@ const useStyles = makeStyles((theme) => ({
     logo: theme.logo
   },
   logoutContainer: {
-    marginTop: 'auto',  // Move o item de logout para a parte inferior
+    marginTop: 'auto', 
     padding: theme.spacing(2),
   },
   logoutButton: {
-    width: '100%',  // Faz o botão ocupar toda a largura do container
+    width: '100%',  
+  },
+  icon: {
+    color: "white",
   },
 }));
 
@@ -193,8 +193,6 @@ const LoggedInLayout = ({ children }) => {
   const greaterThenSm = useMediaQuery(theme.breakpoints.up("sm"));
 
   const [volume, setVolume] = useState(localStorage.getItem("volume") || 1);
-
-  const { dateToClient } = useDate();
 
   const socketManager = useContext(SocketContext);
 
@@ -272,6 +270,8 @@ const LoggedInLayout = ({ children }) => {
     return <BackdropLoading />;
   }
 
+  const greetingMessage = `Bem-vindo, ${user?.name}! Que tal explorar as oportunidades de hoje?`;
+
   return (
     <div className={classes.root}>
       <Drawer
@@ -287,7 +287,7 @@ const LoggedInLayout = ({ children }) => {
       >
         <div className={classes.toolbarIcon}>
           <img src={logo} className={classes.logo} alt="logo" />
-          <IconButton onClick={() => setDrawerOpen(!drawerOpen)}>
+          <IconButton onClick={() => setDrawerOpen(!drawerOpen)} className={classes.icon}>
             <ChevronLeftIcon />
           </IconButton>
         </div>
@@ -298,10 +298,12 @@ const LoggedInLayout = ({ children }) => {
         <Divider />
         <div className={classes.logoutContainer}>
           <MenuItem onClick={handleClickLogout} className={classes.logoutButton}>
-            {i18n.t("mainDrawer.appBar.user.logout")}
+            <AccountCircle className={classes.icon} />
+            <Typography variant="subtitle1" style={{ marginLeft: 10, color: "white" }}>
+              {i18n.t("mainDrawer.appBar.user.logout")}
+            </Typography>
           </MenuItem>
         </div>
-        <Divider />
       </Drawer>
       <AppBar
         position="absolute"
@@ -321,18 +323,18 @@ const LoggedInLayout = ({ children }) => {
             <MenuIcon />
           </IconButton>
           <Typography component="h1" variant="h6" noWrap className={classes.title}>
-            {greaterThenSm ? dateToClient(moment()) : ""}
+            {greetingMessage}
           </Typography>
           <div style={{ display: "flex", alignItems: "center" }}>
             <IconButton color="inherit" onClick={handleRefreshPage}>
-              <CachedIcon />
+              <CachedIcon className={classes.icon} />
             </IconButton>
             <NotificationsPopOver className={classes.NotificationsPopOver} />
             <AnnouncementsPopover />
             <NotificationsVolume volume={volume} setVolume={setVolume} />
             <ChatPopover />
             <IconButton color="inherit" onClick={toggleColorMode}>
-              {theme.palette.type === 'dark' ? <Brightness7Icon style={{ color: "#FFF" }} /> : <Brightness4Icon />}
+              {theme.palette.type === 'dark' ? <Brightness7Icon style={{ color: "white" }} /> : <Brightness4Icon style={{ color: "white" }} />}
             </IconButton>
             <IconButton
               aria-label="account of current user"
@@ -341,7 +343,7 @@ const LoggedInLayout = ({ children }) => {
               onClick={handleMenu}
               color="inherit"
             >
-              <AccountCircle />
+              <AccountCircle className={classes.icon} />
             </IconButton>
             <Menu
               id="menu-appbar"
