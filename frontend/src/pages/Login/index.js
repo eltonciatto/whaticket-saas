@@ -20,7 +20,7 @@ import logo from "../../assets/sendbot-logo4-500x.png";
 const Copyright = () => {
   return (
     <Typography variant="body2" color="textSecondary" align="center">
-      © Sendbot 2024 - Whaticket v4.8.5
+      © Sendbot 2024 - Whaticket
     </Typography>
   );
 };
