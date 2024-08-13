@@ -54,7 +54,8 @@ const useStyles = makeStyles((theme) => ({
     },
     '& .MuiTab-textColorPrimary.Mui-selected': {
       color: theme.mode === 'light' ? '#012489' : '#FFF',
-    }
+    },
+    zoom: 1, // Para garantir que o zoom da página não afete o layout
   },
   avatar: {
     width: "100%",
@@ -138,6 +139,7 @@ const useStyles = makeStyles((theme) => ({
   content: {
     flex: 1,
     overflow: "auto",
+    marginTop: 16, // Espaço extra entre a barra superior e os itens do menu
   },
   container: {
     paddingTop: theme.spacing(4),
@@ -170,12 +172,16 @@ const useStyles = makeStyles((theme) => ({
   logoutContainer: {
     marginTop: 'auto', 
     padding: theme.spacing(2),
+    display: 'none' // Removendo o botão de logout do menu lateral
   },
   logoutButton: {
     width: '100%',  
   },
   icon: {
     color: "white",
+  },
+  menuButtonChevron: {
+    color: theme.palette.type === 'light' ? 'black' : 'white', // Preto no modo claro
   },
 }));
 
@@ -286,16 +292,14 @@ const LoggedInLayout = ({ children }) => {
         open={drawerOpen}
       >
         <div className={classes.toolbarIcon}>
-          <img src={logo} className={classes.logo} alt="logo" />
-          <IconButton onClick={() => setDrawerOpen(!drawerOpen)} className={classes.icon}>
-            <ChevronLeftIcon />
+          <IconButton onClick={() => setDrawerOpen(!drawerOpen)}>
+            <ChevronLeftIcon className={classes.menuButtonChevron} />
           </IconButton>
         </div>
         <Divider />
-        <List className={classes.containerWithScroll}>
-          <MainListItems drawerClose={drawerClose} collapsed={!drawerOpen} />
+        <List>
+          <MainListItems />
         </List>
-        <Divider />
         <div className={classes.logoutContainer}>
           <MenuItem onClick={handleClickLogout} className={classes.logoutButton}>
             <AccountCircle className={classes.icon} />
@@ -320,7 +324,7 @@ const LoggedInLayout = ({ children }) => {
               drawerOpen && classes.menuButtonHidden
             )}
           >
-            <MenuIcon />
+            <MenuIcon style={{ color: theme.palette.type === 'light' ? 'black' : 'white' }} />
           </IconButton>
           <Typography component="h1" variant="h6" noWrap className={classes.title}>
             {greetingMessage}
@@ -363,9 +367,6 @@ const LoggedInLayout = ({ children }) => {
               <MenuItem disabled>{user?.name}</MenuItem>
               <MenuItem onClick={handleOpenUserModal}>
                 {i18n.t("mainDrawer.appBar.user.profile")}
-              </MenuItem>
-              <MenuItem onClick={handleClickLogout}>
-                {i18n.t("mainDrawer.appBar.user.logout")}
               </MenuItem>
             </Menu>
           </div>
