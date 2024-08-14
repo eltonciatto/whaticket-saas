@@ -75,7 +75,6 @@ const Login = () => {
   const classes = useStyles();
   const [user, setUser] = useState({ email: "", password: "" });
   const { handleLogin } = useContext(AuthContext);
-  const { t } = i18n;
 
   const handleChangeInput = useCallback((e) => {
     setUser({ ...user, [e.target.name]: e.target.value });
@@ -105,7 +104,7 @@ const Login = () => {
               required
               fullWidth
               id="email"
-              label={t("login.form.email")}
+              label={i18n.t("login.form.email")}
               name="email"
               value={user.email}
               onChange={handleChangeInput}
@@ -118,7 +117,7 @@ const Login = () => {
               required
               fullWidth
               name="password"
-              label={t("login.form.password")}
+              label={i18n.t("login.form.password")}
               type="password"
               id="password"
               value={user.password}
@@ -144,7 +143,7 @@ const Login = () => {
               color="primary"
               className={classes.submit}
             >
-              {t("login.buttons.submit")}
+              {i18n.t("login.buttons.submit")}
             </Button>
             <Button
               fullWidth
@@ -154,7 +153,7 @@ const Login = () => {
               to="/signup"
               className={classes.submit}
             >
-              {t("login.buttons.register")}
+              {i18n.t("login.buttons.register")}
             </Button>
           </form>
           <Box className={classes.linkContainer}>
