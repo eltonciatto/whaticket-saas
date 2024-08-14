@@ -7,6 +7,7 @@ import api from "../../services/api";
 import toastError from "../../errors/toastError";
 import { SocketContext } from "../../context/Socket/SocketContext";
 import moment from "moment";
+import Cookies from "js-cookie";  // Importando js-cookie
 
 const useAuth = () => {
   const history = useHistory();
@@ -17,9 +18,9 @@ const useAuth = () => {
   // Interceptor de requisição para adicionar o token
   api.interceptors.request.use(
     (config) => {
-      const token = localStorage.getItem("token");
+      const token = Cookies.get("token"); // Usando js-cookie para pegar o token
       if (token) {
-        config.headers["Authorization"] = `Bearer ${JSON.parse(token)}`;
+        config.headers["Authorization"] = `Bearer ${token}`;
         setIsAuth(true);
       }
       return config;
@@ -36,19 +37,19 @@ const useAuth = () => {
         originalRequest._retry = true;
         try {
           const { data } = await api.post("/auth/refresh_token");
-          localStorage.setItem("token", JSON.stringify(data.token));
+          Cookies.set("token", data.token); // Usando js-cookie para salvar o token
           api.defaults.headers.Authorization = `Bearer ${data.token}`;
           return api(originalRequest);
         } catch (err) {
-          localStorage.removeItem("token");
-          localStorage.removeItem("companyId");
+          Cookies.remove("token"); // Removendo o token com js-cookie
+          Cookies.remove("companyId");
           api.defaults.headers.Authorization = undefined;
           setIsAuth(false);
           toastError(err);
         }
       } else if (error?.response?.status === 401) {
-        localStorage.removeItem("token");
-        localStorage.removeItem("companyId");
+        Cookies.remove("token");
+        Cookies.remove("companyId");
         api.defaults.headers.Authorization = undefined;
         setIsAuth(false);
         history.push("/login");
@@ -61,11 +62,12 @@ const useAuth = () => {
   const socketManager = useContext(SocketContext);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = Cookies.get("token");
     (async () => {
       if (token) {
         try {
           const { data } = await api.post("/auth/refresh_token");
+          Cookies.set("token", data.token); // Salvando o token usando js-cookie
           api.defaults.headers.Authorization = `Bearer ${data.token}`;
           setIsAuth(true);
           setUser(data.user);
@@ -78,7 +80,7 @@ const useAuth = () => {
   }, []);
 
   useEffect(() => {
-    const companyId = localStorage.getItem("companyId");
+    const companyId = Cookies.get("companyId");
     if (companyId) {
       const socket = socketManager.getSocket(companyId);
 
@@ -105,7 +107,7 @@ const useAuth = () => {
           (s) => s.key === "campaignsEnabled"
         );
         if (setting && setting.value === "true") {
-          localStorage.setItem("cshow", null);
+          Cookies.set("cshow", null); // Usando js-cookie
         }
       }
 
@@ -118,10 +120,10 @@ const useAuth = () => {
       const dias = moment.duration(diff).asDays();
 
       if (before) {
-        localStorage.setItem("token", JSON.stringify(data.token));
-        localStorage.setItem("companyId", companyId);
-        localStorage.setItem("userId", id);
-        localStorage.setItem("companyDueDate", vencimento);
+        Cookies.set("token", data.token); // Salvando token com js-cookie
+        Cookies.set("companyId", companyId);
+        Cookies.set("userId", id);
+        Cookies.set("companyDueDate", vencimento);
         api.defaults.headers.Authorization = `Bearer ${data.token}`;
         setUser(data.user);
         setIsAuth(true);
@@ -146,10 +148,10 @@ const useAuth = () => {
       await api.delete("/auth/logout");
       setIsAuth(false);
       setUser({});
-      localStorage.removeItem("token");
-      localStorage.removeItem("companyId");
-      localStorage.removeItem("userId");
-      localStorage.removeItem("cshow");
+      Cookies.remove("token");
+      Cookies.remove("companyId");
+      Cookies.remove("userId");
+      Cookies.remove("cshow");
       api.defaults.headers.Authorization = undefined;
       history.push("/login");
     } catch (err) {
