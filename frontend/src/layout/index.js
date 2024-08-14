@@ -181,7 +181,7 @@ const useStyles = makeStyles((theme) => ({
     color: "white",
   },
   menuButtonChevron: {
-    color: theme.palette.type === 'light' ? 'black' : 'white', // Preto no modo claro
+    color: 'black', // Preto para o ícone de fechar o menu
   },
 }));
 
@@ -324,14 +324,14 @@ const LoggedInLayout = ({ children }) => {
               drawerOpen && classes.menuButtonHidden
             )}
           >
-            <MenuIcon style={{ color: theme.palette.type === 'light' ? 'black' : 'white' }} />
+            <MenuIcon style={{ color: 'white' }} />
           </IconButton>
           <Typography component="h1" variant="h6" noWrap className={classes.title}>
             {greetingMessage}
           </Typography>
           <div style={{ display: "flex", alignItems: "center" }}>
             <IconButton color="inherit" onClick={handleRefreshPage}>
-              <CachedIcon className={classes.icon} />
+              <CachedIcon style={{ color: 'white' }} />
             </IconButton>
             <NotificationsPopOver className={classes.NotificationsPopOver} />
             <AnnouncementsPopover />
@@ -347,7 +347,7 @@ const LoggedInLayout = ({ children }) => {
               onClick={handleMenu}
               color="inherit"
             >
-              <AccountCircle className={classes.icon} />
+              <AccountCircle style={{ color: 'white' }} />
             </IconButton>
             <Menu
               id="menu-appbar"
