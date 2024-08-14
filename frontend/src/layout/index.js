@@ -179,14 +179,15 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const LoggedInLayout = ({ children }) => {
+const LoggedInLayout = ({ children, themeToggle }) => {
   const classes = useStyles();
   const [userModalOpen, setUserModalOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const { handleLogout, loading, user } = useContext(AuthContext);
+  const { handleLogout, loading } = useContext(AuthContext);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerVariant, setDrawerVariant] = useState("permanent");
+  const { user } = useContext(AuthContext);
 
   const theme = useTheme();
   const { colorMode } = useContext(ColorModeContext);
@@ -297,7 +298,6 @@ const LoggedInLayout = ({ children }) => {
           ),
         }}
         open={drawerOpen}
-        onClose={drawerClose}
       >
         <div className={classes.toolbarIcon}>
           <img src={logo} className={classes.logo} alt="logo" />
@@ -319,65 +319,108 @@ const LoggedInLayout = ({ children }) => {
       <AppBar
         position="absolute"
         className={clsx(classes.appBar, drawerOpen && classes.appBarShift)}
+        color="primary"
       >
-        <Toolbar className={classes.toolbar}>
+        <Toolbar variant="dense" className={classes.toolbar}>
           <IconButton
             edge="start"
-            color="inherit"
+            variant="contained"
             aria-label="open drawer"
             onClick={() => setDrawerOpen(!drawerOpen)}
             className={clsx(
               classes.menuButton,
-              drawerOpen && classes.menuButtonHidden
+              drawerOpen && classes.menuButtonHidden,
+              classes.iconButton
             )}
           >
             <MenuIcon />
           </IconButton>
-          <Typography component="h1" variant="h6" noWrap className={classes.title}>
-            {moment(dateToClient(new Date())).format("dddd, DD [de] MMMM [de] YYYY")}
+
+          <Typography
+            component="h2"
+            variant="h6"
+            color="inherit"
+            noWrap
+            className={classes.title}
+          >
+            {user.name}
+            <span style={{ fontSize: 12, marginLeft: 10 }}>
+              {i18n.t("mainDrawer.appBar.user.lastSeen")}{" "}
+              {moment(user.lastLogin).fromNow()} (
+              {dateToClient(user.lastLogin).formattedDate})
+            </span>
           </Typography>
-          <IconButton color="inherit" onClick={toggleColorMode}>
-            {theme.palette.mode === "dark" ? (
+
+          <IconButton
+            edge="start"
+            onClick={toggleColorMode}
+            className={classes.iconButton}
+          >
+            {theme.mode === "dark" ? (
               <Brightness7Icon className={classes.brightnessIcon} />
             ) : (
               <Brightness4Icon className={classes.brightnessIcon} />
             )}
           </IconButton>
-          <NotificationsPopOver />
-          <AnnouncementsPopover />
-          <ChatPopover />
-          <NotificationsVolume volume={volume} onVolumeChange={setVolume} />
-          <IconButton onClick={handleMenu} className={classes.iconButton}>
-            <AccountCircle className={classes.accountIcon} />
-          </IconButton>
-          <Menu
-            id="menu-appbar"
-            anchorEl={anchorEl}
-            anchorOrigin={{
-              vertical: "top",
-              horizontal: "right",
-            }}
-            keepMounted
-            transformOrigin={{
-              vertical: "top",
-              horizontal: "right",
-            }}
-            open={menuOpen}
-            onClose={handleCloseMenu}
-          >
-            <MenuItem onClick={handleOpenUserModal}>Perfil</MenuItem>
-            <MenuItem onClick={handleClickLogout}>Sair</MenuItem>
-          </Menu>
+
+          <NotificationsVolume
+            setVolume={setVolume}
+            volume={volume}
+            className={classes.iconButton}
+          />
+
           <IconButton
-            color="inherit"
-            aria-label="refresh page"
             onClick={handleRefreshPage}
+            aria-label={i18n.t("mainDrawer.appBar.refresh")}
+            className={classes.iconButton}
           >
-            <CachedIcon className={classes.iconButton} />
+            <CachedIcon />
           </IconButton>
+
+          {user.id && (
+            <NotificationsPopOver volume={volume} className={classes.iconButton} />
+          )}
+
+          <AnnouncementsPopover />
+
+          <ChatPopover />
+
+          <div>
+            <IconButton
+              aria-label="account of current user"
+              aria-controls="menu-appbar"
+              aria-haspopup="true"
+              onClick={handleMenu}
+              className={classes.accountIcon}
+            >
+              <AccountCircle />
+            </IconButton>
+            <Menu
+              id="menu-appbar"
+              anchorEl={anchorEl}
+              getContentAnchorEl={null}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "right",
+              }}
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
+              open={menuOpen}
+              onClose={handleCloseMenu}
+            >
+              <MenuItem onClick={handleOpenUserModal}>
+                {i18n.t("mainDrawer.appBar.user.profile")}
+              </MenuItem>
+              <MenuItem onClick={handleClickLogout}>
+                {i18n.t("mainDrawer.appBar.user.logout")}
+              </MenuItem>
+            </Menu>
+          </div>
         </Toolbar>
       </AppBar>
-      <main className={classes.content} onClick={handleMenuItemClick}>
+      <main className={classes.content}>
         <div className={classes.appBarSpacer} />
         {children}
       </main>
