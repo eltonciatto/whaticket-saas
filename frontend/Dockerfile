@@ -14,6 +14,10 @@ COPY --from=build-deps /usr/src/app/build ./build
 COPY server.js ./
 COPY add-env-vars.sh ./
 RUN chmod +x add-env-vars.sh
-RUN npm install express
+
+# Instalar apenas as dependências necessárias para rodar o servidor
+COPY package*.json ./
+RUN npm install --only=production
+
 EXPOSE 3250
 CMD ["sh", "-c", "sh ./add-env-vars.sh && node server.js"]
