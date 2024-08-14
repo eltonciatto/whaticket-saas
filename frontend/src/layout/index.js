@@ -39,8 +39,8 @@ import ChatPopover from "../pages/Chat/ChatPopover";
 import { useDate } from "../hooks/useDate";
 
 import ColorModeContext from "../layout/themeContext";
-import Brightness4Icon from '@material-ui/icons/Brightness4';
-import Brightness7Icon from '@material-ui/icons/Brightness7';
+import Brightness4Icon from "@material-ui/icons/Brightness4";
+import Brightness7Icon from "@material-ui/icons/Brightness7";
 
 const drawerWidth = 240;
 
@@ -52,14 +52,13 @@ const useStyles = makeStyles((theme) => ({
       height: "calc(100vh - 56px)",
     },
     backgroundColor: theme.palette.fancyBackground,
-    '& .MuiButton-outlinedPrimary': {
-      color: theme.mode === 'light' ? '#FFF' : '#FFF',
-	  backgroundColor: theme.mode === 'light' ? '#012489' : '#ffffff',
-      //border: theme.mode === 'light' ? '1px solid rgba(0 124 102)' : '1px solid rgba(255, 255, 255, 0.5)',
+    "& .MuiButton-outlinedPrimary": {
+      color: theme.mode === "light" ? "#FFF" : "#FFF",
+      backgroundColor: theme.mode === "light" ? "#012489" : "#ffffff",
     },
-    '& .MuiTab-textColorPrimary.Mui-selected': {
-      color: theme.mode === 'light' ? '#012489' : '#FFF',
-    }
+    "& .MuiTab-textColorPrimary.Mui-selected": {
+      color: theme.mode === "light" ? "#012489" : "#FFF",
+    },
   },
   avatar: {
     width: "100%",
@@ -76,8 +75,8 @@ const useStyles = makeStyles((theme) => ({
     padding: "0 8px",
     minHeight: "48px",
     [theme.breakpoints.down("sm")]: {
-      height: "48px"
-    }
+      height: "48px",
+    },
   },
   appBar: {
     zIndex: theme.zIndex.drawer + 1,
@@ -94,8 +93,8 @@ const useStyles = makeStyles((theme) => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
     [theme.breakpoints.down("sm")]: {
-      display: "none"
-    }
+      display: "none",
+    },
   },
   menuButton: {
     marginRight: 36,
@@ -117,9 +116,9 @@ const useStyles = makeStyles((theme) => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
     [theme.breakpoints.down("sm")]: {
-      width: "100%"
+      width: "100%",
     },
-    ...theme.scrollbarStylesSoft
+    ...theme.scrollbarStylesSoft,
   },
   drawerPaperClose: {
     overflowX: "hidden",
@@ -132,8 +131,8 @@ const useStyles = makeStyles((theme) => ({
       width: theme.spacing(9),
     },
     [theme.breakpoints.down("sm")]: {
-      width: "100%"
-    }
+      width: "100%",
+    },
   },
   appBarSpacer: {
     minHeight: "48px",
@@ -141,7 +140,6 @@ const useStyles = makeStyles((theme) => ({
   content: {
     flex: 1,
     overflow: "auto",
-
   },
   container: {
     paddingTop: theme.spacing(4),
@@ -151,7 +149,7 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(2),
     display: "flex",
     overflow: "auto",
-    flexDirection: "column"
+    flexDirection: "column",
   },
   containerWithScroll: {
     flex: 1,
@@ -159,8 +157,14 @@ const useStyles = makeStyles((theme) => ({
     overflowY: "scroll",
     ...theme.scrollbarStyles,
   },
-  NotificationsPopOver: {
-    // color: theme.barraSuperior.secondary.main,
+  iconButton: {
+    color: "white",
+  },
+  brightnessIcon: {
+    color: "white",
+  },
+  accountIcon: {
+    color: "white",
   },
   logo: {
     width: "80%",
@@ -171,7 +175,7 @@ const useStyles = makeStyles((theme) => ({
       height: "80%",
       maxWidth: 180,
     },
-    logo: theme.logo
+    logo: theme.logo,
   },
 }));
 
@@ -183,7 +187,6 @@ const LoggedInLayout = ({ children, themeToggle }) => {
   const { handleLogout, loading } = useContext(AuthContext);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerVariant, setDrawerVariant] = useState("permanent");
-  // const [dueDate, setDueDate] = useState("");
   const { user } = useContext(AuthContext);
 
   const theme = useTheme();
@@ -193,54 +196,6 @@ const LoggedInLayout = ({ children, themeToggle }) => {
   const [volume, setVolume] = useState(localStorage.getItem("volume") || 1);
 
   const { dateToClient } = useDate();
-
-
-  //################### CODIGOS DE TESTE #########################################
-  // useEffect(() => {
-  //   navigator.getBattery().then((battery) => {
-  //     console.log(`Battery Charging: ${battery.charging}`);
-  //     console.log(`Battery Level: ${battery.level * 100}%`);
-  //     console.log(`Charging Time: ${battery.chargingTime}`);
-  //     console.log(`Discharging Time: ${battery.dischargingTime}`);
-  //   })
-  // }, []);
-
-  // useEffect(() => {
-  //   const geoLocation = navigator.geolocation
-
-  //   geoLocation.getCurrentPosition((position) => {
-  //     let lat = position.coords.latitude;
-  //     let long = position.coords.longitude;
-
-  //     console.log('latitude: ', lat)
-  //     console.log('longitude: ', long)
-  //   })
-  // }, []);
-
-  // useEffect(() => {
-  //   const nucleos = window.navigator.hardwareConcurrency;
-
-  //   console.log('Nucleos: ', nucleos)
-  // }, []);
-
-  // useEffect(() => {
-  //   console.log('userAgent', navigator.userAgent)
-  //   if (
-  //     navigator.userAgent.match(/Android/i)
-  //     || navigator.userAgent.match(/webOS/i)
-  //     || navigator.userAgent.match(/iPhone/i)
-  //     || navigator.userAgent.match(/iPad/i)
-  //     || navigator.userAgent.match(/iPod/i)
-  //     || navigator.userAgent.match(/BlackBerry/i)
-  //     || navigator.userAgent.match(/Windows Phone/i)
-  //   ) {
-  //     console.log('é mobile ', true) //celular
-  //   }
-  //   else {
-  //     console.log('não é mobile: ', false) //nao é celular
-  //   }
-  // }, []);
-  //##############################################################################
 
   const socketManager = useContext(SocketContext);
 
@@ -280,8 +235,9 @@ const LoggedInLayout = ({ children, themeToggle }) => {
     }, 1000 * 60 * 5);
 
     return () => {
-      socket.disconnect();
+      socket.off(`company-${companyId}-auth`);
       clearInterval(interval);
+      socket.disconnect();
     };
   }, [socketManager]);
 
@@ -313,7 +269,7 @@ const LoggedInLayout = ({ children, themeToggle }) => {
 
   const handleRefreshPage = () => {
     window.location.reload(false);
-  }
+  };
 
   const handleMenuItemClick = () => {
     const { innerWidth: width } = window;
@@ -324,7 +280,7 @@ const LoggedInLayout = ({ children, themeToggle }) => {
 
   const toggleColorMode = () => {
     colorMode.toggleColorMode();
-  }
+  };
 
   if (loading) {
     return <BackdropLoading />;
@@ -373,7 +329,8 @@ const LoggedInLayout = ({ children, themeToggle }) => {
             onClick={() => setDrawerOpen(!drawerOpen)}
             className={clsx(
               classes.menuButton,
-              drawerOpen && classes.menuButtonHidden
+              drawerOpen && classes.menuButtonHidden,
+              classes.iconButton
             )}
           >
             <MenuIcon />
@@ -386,36 +343,43 @@ const LoggedInLayout = ({ children, themeToggle }) => {
             noWrap
             className={classes.title}
           >
-            {/* {greaterThenSm && user?.profile === "admin" && getDateAndDifDays(user?.company?.dueDate).difData < 7 ? ( */}
-            {greaterThenSm && user?.profile === "admin" && user?.company?.dueDate ? (
-              <>
-                Olá <b>{user.name}</b>, Bem vindo a <b>{user?.company?.name}</b>! (Ativo até {dateToClient(user?.company?.dueDate)})
-              </>
-            ) : (
-              <>
-                Olá  <b>{user.name}</b>, Bem vindo a <b>{user?.company?.name}</b>!
-              </>
-            )}
+            {user.name}
+            <span style={{ fontSize: 12, marginLeft: 10 }}>
+              {i18n.t("mainDrawer.appBar.user.lastSeen")}{" "}
+              {moment(user.lastLogin).fromNow()} (
+              {dateToClient(user.lastLogin).formattedDate})
+            </span>
           </Typography>
 
-          <IconButton edge="start" onClick={toggleColorMode}>
-            {theme.mode === 'dark' ? <Brightness7Icon style={{ color: "white" }} /> : <Brightness4Icon style={{ color: "white" }} />}
+          <IconButton
+            edge="start"
+            onClick={toggleColorMode}
+            className={classes.iconButton}
+          >
+            {theme.mode === "dark" ? (
+              <Brightness7Icon className={classes.brightnessIcon} />
+            ) : (
+              <Brightness4Icon className={classes.brightnessIcon} />
+            )}
           </IconButton>
 
           <NotificationsVolume
             setVolume={setVolume}
             volume={volume}
+            className={classes.iconButton}
           />
 
           <IconButton
             onClick={handleRefreshPage}
             aria-label={i18n.t("mainDrawer.appBar.refresh")}
-            color="inherit"
+            className={classes.iconButton}
           >
-            <CachedIcon style={{ color: "white" }} />
+            <CachedIcon />
           </IconButton>
 
-          {user.id && <NotificationsPopOver volume={volume} />}
+          {user.id && (
+            <NotificationsPopOver volume={volume} className={classes.iconButton} />
+          )}
 
           <AnnouncementsPopover />
 
@@ -427,8 +391,7 @@ const LoggedInLayout = ({ children, themeToggle }) => {
               aria-controls="menu-appbar"
               aria-haspopup="true"
               onClick={handleMenu}
-              variant="contained"
-              style={{ color: "white" }}
+              className={classes.accountIcon}
             >
               <AccountCircle />
             </IconButton>
@@ -459,8 +422,7 @@ const LoggedInLayout = ({ children, themeToggle }) => {
       </AppBar>
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
-
-        {children ? children : null}
+        {children}
       </main>
     </div>
   );
