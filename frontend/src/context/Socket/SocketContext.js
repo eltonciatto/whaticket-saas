@@ -1,6 +1,8 @@
 import { createContext } from "react";
 import openSocket from "socket.io-client";
 import { isExpired, decodeToken } from "react-jwt";
+import Cookies from "js-cookie";
+import * as Sentry from "@sentry/react";
 
 class ManagedSocket {
   constructor(socketManager) {
@@ -13,7 +15,7 @@ class ManagedSocket {
       if (this.rawSocket.io.opts.query?.r && !this.rawSocket.recovered) {
         const refreshJoinsOnReady = () => {
           for (const j of this.joins) {
-            console.debug("refreshing join", j);
+            console.debug("Atualizando inscrição", j);
             this.rawSocket.emit(`join${j.event}`, ...j.params);
           }
           this.rawSocket.off("ready", refreshJoinsOnReady);
@@ -22,34 +24,36 @@ class ManagedSocket {
           this.rawSocket.off(j.event, j.callback);
           this.rawSocket.on(j.event, j.callback);
         }
-        
+
         this.rawSocket.on("ready", refreshJoinsOnReady);
       }
     });
   }
-  
+
   on(event, callback) {
     if (event === "ready" || event === "connect") {
       return this.socketManager.onReady(callback);
     }
-    this.callbacks.push({event, callback});
+    this.callbacks.push({ event, callback });
     return this.rawSocket.on(event, callback);
   }
-  
+
   off(event, callback) {
-    const i = this.callbacks.findIndex((c) => c.event === event && c.callback === callback);
+    const i = this.callbacks.findIndex(
+      (c) => c.event === event && c.callback === callback
+    );
     this.callbacks.splice(i, 1);
     return this.rawSocket.off(event, callback);
   }
-  
+
   emit(event, ...params) {
     if (event.startsWith("join")) {
       this.joins.push({ event: event.substring(4), params });
-      console.log("Joining", { event: event.substring(4), params});
+      console.log("Inscrevendo-se em", { event: event.substring(4), params });
     }
     return this.rawSocket.emit(event, ...params);
   }
-  
+
   disconnect() {
     for (const j of this.joins) {
       this.rawSocket.emit(`leave${j.event}`, ...j.params);
@@ -75,11 +79,8 @@ const SocketManager = {
   currentSocket: null,
   socketReady: false,
 
-  getSocket: function(companyId) {
-    let userId = null;
-    if (localStorage.getItem("userId")) {
-      userId = localStorage.getItem("userId");
-    }
+  getSocket: function (companyId) {
+    let userId = Cookies.get("userId");
 
     if (!companyId && !this.currentSocket) {
       return new DummySocket();
@@ -91,30 +92,28 @@ const SocketManager = {
 
     if (companyId !== this.currentCompanyId || userId !== this.currentUserId) {
       if (this.currentSocket) {
-        console.warn("closing old socket - company or user changed");
+        console.warn("Fechando o socket antigo - empresa ou usuário alterado");
         this.currentSocket.removeAllListeners();
         this.currentSocket.disconnect();
         this.currentSocket = null;
         this.currentCompanyId = null;
-		    this.currentUserId = null;
+        this.currentUserId = null;
       }
 
-      let token = JSON.parse(localStorage.getItem("token"));
+      let token = Cookies.get("token");
       if (!token) {
         return new DummySocket();
       }
-      
-      if ( isExpired(token) ) {
-        console.warn("Expired token, reload after refresh");
-        setTimeout(() => {
-          window.location.reload();
-        },1000);
+
+      if (isExpired(token)) {
+        console.warn("Token expirado, recarregando após atualização");
+        this.refreshToken();
         return new DummySocket();
       }
 
       this.currentCompanyId = companyId;
       this.currentUserId = userId;
-      
+
       this.currentSocket = openSocket(process.env.REACT_APP_BACKEND_URL, {
         transports: ["websocket"],
         pingTimeout: 18000,
@@ -124,66 +123,72 @@ const SocketManager = {
 
       this.currentSocket.io.on("reconnect_attempt", () => {
         this.currentSocket.io.opts.query.r = 1;
-        token = JSON.parse(localStorage.getItem("token"));
-        if ( isExpired(token) ) {
-          console.warn("Refreshing");
-          window.location.reload();
+        token = Cookies.get("token");
+        if (isExpired(token)) {
+          console.warn("Atualizando token");
+          this.refreshToken();
         } else {
-          console.warn("Using new token");
+          console.warn("Usando novo token");
           this.currentSocket.io.opts.query.token = token;
         }
       });
-      
+
       this.currentSocket.on("disconnect", (reason) => {
-        console.warn(`socket disconnected because: ${reason}`);
+        console.warn(`Socket desconectado devido a: ${reason}`);
         if (reason.startsWith("io server disconnect")) {
-          console.warn("tryng to reconnect", this.currentSocket);
-          token = JSON.parse(localStorage.getItem("token"));
-          
-          if ( isExpired(token) ) {
-            console.warn("Expired token - refreshing");
-            window.location.reload();
+          console.warn("Tentando reconectar", this.currentSocket);
+          token = Cookies.get("token");
+
+          if (isExpired(token)) {
+            console.warn("Token expirado - atualizando");
+            this.refreshToken();
             return;
           }
-          console.warn("Reconnecting using refreshed token");
+          console.warn("Reconectando usando token atualizado");
           this.currentSocket.io.opts.query.token = token;
           this.currentSocket.io.opts.query.r = 1;
           this.currentSocket.connect();
-        }        
+        }
       });
-      
+
       this.currentSocket.on("connect", (...params) => {
-        console.warn("socket connected", params);
-      })
-      
-      this.currentSocket.onAny((event, ...args) => {
-        console.debug("Event: ", { socket: this.currentSocket, event, args });
+        console.warn("Socket conectado", params);
       });
-      
+
+      this.currentSocket.onAny((event, ...args) => {
+        console.debug("Evento: ", { socket: this.currentSocket, event, args });
+      });
+
       this.onReady(() => {
         this.socketReady = true;
       });
-
     }
-    
+
     return new ManagedSocket(this);
   },
-  
-  onReady: function( callbackReady ) {
+
+  onReady: function (callbackReady) {
     if (this.socketReady) {
       callbackReady();
-      return
+      return;
     }
-    
+
     this.currentSocket.once("ready", () => {
       callbackReady();
     });
   },
-  
-  onConnect: function( callbackReady ) { this.onReady( callbackReady ) },
 
+  onConnect: function (callbackReady) {
+    this.onReady(callbackReady);
+  },
+
+  refreshToken: function () {
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
+  },
 };
 
-const SocketContext = createContext()
+const SocketContext = createContext();
 
 export { SocketContext, SocketManager };
