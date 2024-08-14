@@ -6,7 +6,9 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListSubheader from "@material-ui/core/ListSubheader";
 import Divider from "@material-ui/core/Divider";
-import { Badge, Collapse, List } from "@material-ui/core";
+import Collapse from "@material-ui/core/Collapse";
+import Badge from "@material-ui/core/Badge";
+import List from "@material-ui/core/List";
 import DashboardOutlinedIcon from "@material-ui/icons/DashboardOutlined";
 import WhatsAppIcon from "@material-ui/icons/WhatsApp";
 import SyncAltIcon from "@material-ui/icons/SyncAlt";
@@ -53,7 +55,6 @@ const useStyles = makeStyles((theme) => ({
     marginBottom: "-10px",
   },
 }));
-
 
 function ListItemLink(props) {
   const { icon, primary, to, className } = props;
@@ -142,23 +143,19 @@ const MainListItems = (props) => {
   const [showCampaigns, setShowCampaigns] = useState(false);
   const [showKanban, setShowKanban] = useState(false);
   const [showOpenAi, setShowOpenAi] = useState(false);
-  const [showIntegrations, setShowIntegrations] = useState(false); const history = useHistory();
+  const [showIntegrations, setShowIntegrations] = useState(false); 
+  const history = useHistory();
   const [showSchedules, setShowSchedules] = useState(false);
   const [showInternalChat, setShowInternalChat] = useState(false);
   const [showExternalApi, setShowExternalApi] = useState(false);
-
 
   const [invisible, setInvisible] = useState(true);
   const [pageNumber, setPageNumber] = useState(1);
   const [searchParam] = useState("");
   const [chats, dispatch] = useReducer(reducer, []);
   const { getPlanCompany } = usePlans();
-  
   const [version, setVersion] = useState(false);
-  
-  
   const { getVersion } = useVersion();
-
   const socketManager = useContext(SocketContext);
 
   useEffect(() => {
@@ -169,7 +166,6 @@ const MainListItems = (props) => {
     fetchVersion();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
- 
 
   useEffect(() => {
     dispatch({ type: "RESET" });
@@ -192,8 +188,6 @@ const MainListItems = (props) => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -278,7 +272,6 @@ const MainListItems = (props) => {
   };
 
   const handleClickLogout = () => {
-    //handleCloseMenu();
     handleLogout();
   };
 
@@ -301,23 +294,22 @@ const MainListItems = (props) => {
         primary={i18n.t("mainDrawer.listItems.tickets")}
         icon={<WhatsAppIcon />}
       />
-	  
-	{showKanban && (  
-	  <ListItemLink
-        to="/kanban"
-        primary={i18n.t("Kanban")}
-        icon={<TableChartIcon />}
-      />
-	  )}
 
+      {showKanban && (  
+        <ListItemLink
+          to="/kanban"
+          primary={i18n.t("Kanban")}
+          icon={<TableChartIcon />}
+        />
+      )}
 
       <ListItemLink
         to="/quick-messages"
         primary={i18n.t("mainDrawer.listItems.quickMessages")}
         icon={<FlashOnIcon />}
       />
-	  
-	  <ListItemLink
+
+      <ListItemLink
         to="/todolist"
         primary={i18n.t("Tarefas")}
         icon={<BorderColorIcon />}
@@ -357,6 +349,20 @@ const MainListItems = (props) => {
         icon={<HelpOutlineIcon />}
       />
 
+      <ListSubheader
+        hidden={collapsed}
+        className={classes.ListSubheader}
+        inset
+        color="inherit"
+      >
+        {i18n.t("mainDrawer.listItems.analyses")}
+      </ListSubheader>
+      <ListItemLink
+        to="/"
+        primary="Dashboard"
+        icon={<DashboardOutlinedIcon />}
+      />
+
       <Can
         role={user.profile}
         perform="drawer-admin-items:view"
@@ -372,10 +378,11 @@ const MainListItems = (props) => {
                 paddingLeft: 20
               }}
               inset
-              color="inherit">
+              color="inherit"
+            >
               {i18n.t("mainDrawer.listItems.administration")}
             </ListSubheader>
-			
+
             {showCampaigns && (
               <>
                 <ListItem
@@ -495,23 +502,15 @@ const MainListItems = (props) => {
               primary={i18n.t("mainDrawer.listItems.settings")}
               icon={<SettingsOutlinedIcon />}
             />
-			
-			
-            {!collapsed && <React.Fragment>
-              <Divider />
-              {/* 
-              // IMAGEM NO MENU
-              <Hidden only={['sm', 'xs']}>
-                <img style={{ width: "100%", padding: "10px" }} src={logo} alt="image" />            
-              </Hidden> 
-              */}
-              <Typography style={{ fontSize: "12px", padding: "10px", textAlign: "right", fontWeight: "bold" }}>
-                {`${version}`}
-
-              </Typography>
-            </React.Fragment>
-            }
-			
+            
+            {!collapsed && (
+              <>
+                <Divider />
+                <Typography style={{ fontSize: "12px", padding: "10px", textAlign: "right", fontWeight: "bold" }}>
+                  {`${version}`}
+                </Typography>
+              </>
+            )}
           </>
         )}
       />
