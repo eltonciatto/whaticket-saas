@@ -7,7 +7,7 @@ import api from "../../services/api";
 import toastError from "../../errors/toastError";
 import { SocketContext } from "../../context/Socket/SocketContext";
 import moment from "moment";
-import Cookies from "js-cookie";  // Importando js-cookie
+import Cookies from "js-cookie";  // Importando o js-cookie
 
 const useAuth = () => {
   const history = useHistory();
