@@ -1,5 +1,4 @@
 import React, { useState, useContext, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import clsx from "clsx";
 import moment from "moment";
 import {
@@ -50,7 +49,7 @@ const useStyles = makeStyles((theme) => ({
     display: "flex",
     height: "100vh",
     [theme.breakpoints.down("sm")]: {
-      height: "100%",
+      height: "calc(100vh - 56px)",
     },
     backgroundColor: theme.palette.fancyBackground,
     "& .MuiButton-outlinedPrimary": {
@@ -180,9 +179,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const LoggedInLayout = ({ children, themeToggle }) => {
+const LoggedInLayout = ({ children }) => {
   const classes = useStyles();
-  const navigate = useNavigate();
   const [userModalOpen, setUserModalOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -204,7 +202,6 @@ const LoggedInLayout = ({ children, themeToggle }) => {
     if (document.body.offsetWidth > 1200) {
       setDrawerOpen(true);
     }
-    navigate("/tickets");
   }, []);
 
   useEffect(() => {
@@ -292,30 +289,33 @@ const LoggedInLayout = ({ children, themeToggle }) => {
     <div className={classes.root}>
       <Drawer
         variant={drawerVariant}
-        className={clsx({
-          [classes.drawerPaper]: drawerOpen,
-          [classes.drawerPaperClose]: !drawerOpen,
-        })}
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
+        className={drawerOpen ? classes.drawerPaper : classes.drawerPaperClose}
         classes={{
-          paper: clsx({
-            [classes.drawerPaper]: drawerOpen,
-            [classes.drawerPaperClose]: !drawerOpen,
-          }),
+          paper: clsx(
+            classes.drawerPaper,
+            !drawerOpen && classes.drawerPaperClose
+          ),
         }}
+        open={drawerOpen}
+        onClose={drawerClose}
       >
         <div className={classes.toolbarIcon}>
+          <img src={logo} className={classes.logo} alt="logo" />
           <IconButton onClick={() => setDrawerOpen(!drawerOpen)}>
-            {drawerOpen ? <ChevronLeftIcon /> : <MenuIcon />}
+            <ChevronLeftIcon />
           </IconButton>
         </div>
         <Divider />
-        <img src={logo} alt="logo" className={classes.logo} />
-        <List onClick={handleMenuItemClick}>
-          <MainListItems onClose={drawerClose} />
+        <List className={classes.containerWithScroll}>
+          <MainListItems drawerClose={drawerClose} collapsed={!drawerOpen} />
         </List>
+        <Divider />
       </Drawer>
+      <UserModal
+        open={userModalOpen}
+        onClose={() => setUserModalOpen(false)}
+        userId={user?.id}
+      />
       <AppBar
         position="absolute"
         className={clsx(classes.appBar, drawerOpen && classes.appBarShift)}
@@ -325,7 +325,7 @@ const LoggedInLayout = ({ children, themeToggle }) => {
             edge="start"
             color="inherit"
             aria-label="open drawer"
-            onClick={() => setDrawerOpen(true)}
+            onClick={() => setDrawerOpen(!drawerOpen)}
             className={clsx(
               classes.menuButton,
               drawerOpen && classes.menuButtonHidden
@@ -333,82 +333,54 @@ const LoggedInLayout = ({ children, themeToggle }) => {
           >
             <MenuIcon />
           </IconButton>
-          <Typography
-            component="h1"
-            variant="h6"
-            color="inherit"
-            noWrap
-            className={classes.title}
-          >
-            {`${i18n.t("mainDrawer.listItems.greetings")} ${
-              user.name
-            }, ${i18n.t("mainDrawer.listItems.day")} ${dateToClient(
-              moment()
-            )}`}
+          <Typography component="h1" variant="h6" noWrap className={classes.title}>
+            {moment(dateToClient(new Date())).format("dddd, DD [de] MMMM [de] YYYY")}
           </Typography>
-          <div>
-            <DarkMode />
-            <IconButton
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleMenu}
-              className={classes.accountIcon}
-            >
-              <AccountCircle />
-            </IconButton>
-            <Menu
-              id="menu-appbar"
-              anchorEl={anchorEl}
-              anchorOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "right",
-              }}
-              open={menuOpen}
-              onClose={handleCloseMenu}
-            >
-              <MenuItem onClick={handleOpenUserModal}>
-                {i18n.t("mainDrawer.listItems.profile")}
-              </MenuItem>
-              <MenuItem onClick={handleClickLogout}>
-                {i18n.t("mainDrawer.listItems.logout")}
-              </MenuItem>
-            </Menu>
-          </div>
-          <IconButton onClick={handleRefreshPage}>
-            <CachedIcon className={classes.iconButton} />
-          </IconButton>
-          <IconButton onClick={toggleColorMode}>
-            {theme.mode === "dark" ? (
+          <IconButton color="inherit" onClick={toggleColorMode}>
+            {theme.palette.mode === "dark" ? (
               <Brightness7Icon className={classes.brightnessIcon} />
             ) : (
               <Brightness4Icon className={classes.brightnessIcon} />
             )}
           </IconButton>
-          <AnnouncementsPopover />
           <NotificationsPopOver />
-          <NotificationsVolume
-            volume={volume}
-            onVolumeChange={setVolume}
-            onClose={() => setAnchorEl(null)}
-          />
+          <AnnouncementsPopover />
           <ChatPopover />
+          <NotificationsVolume volume={volume} onVolumeChange={setVolume} />
+          <IconButton onClick={handleMenu} className={classes.iconButton}>
+            <AccountCircle className={classes.accountIcon} />
+          </IconButton>
+          <Menu
+            id="menu-appbar"
+            anchorEl={anchorEl}
+            anchorOrigin={{
+              vertical: "top",
+              horizontal: "right",
+            }}
+            keepMounted
+            transformOrigin={{
+              vertical: "top",
+              horizontal: "right",
+            }}
+            open={menuOpen}
+            onClose={handleCloseMenu}
+          >
+            <MenuItem onClick={handleOpenUserModal}>Perfil</MenuItem>
+            <MenuItem onClick={handleClickLogout}>Sair</MenuItem>
+          </Menu>
+          <IconButton
+            color="inherit"
+            aria-label="refresh page"
+            onClick={handleRefreshPage}
+          >
+            <CachedIcon className={classes.iconButton} />
+          </IconButton>
         </Toolbar>
       </AppBar>
-      <main className={classes.content}>
+      <main className={classes.content} onClick={handleMenuItemClick}>
         <div className={classes.appBarSpacer} />
-        <div className={classes.containerWithScroll}>{children}</div>
+        {children}
       </main>
-      <UserModal
-        open={userModalOpen}
-        onClose={() => setUserModalOpen(false)}
-        aria-labelledby="form-dialog-title"
-      />
     </div>
   );
 };
