@@ -12,16 +12,15 @@ import MainListItems from "./MainListItems";
 import NotificationsPopOver from "../components/NotificationsPopOver";
 import NotificationsVolume from "../components/NotificationsVolume";
 import UserModal from "../components/UserModal";
-import { AuthContext } from "../context/Auth/AuthContext";
 import BackdropLoading from "../components/BackdropLoading";
-import DarkMode from "../components/DarkMode";
-import { i18n } from "../translate/i18n";
-import toastError from "../errors/toastError";
 import AnnouncementsPopover from "../components/AnnouncementsPopover";
+import { AuthContext } from "../context/Auth/AuthContext";
 import { SocketContext } from "../context/Socket/SocketContext";
 import ChatPopover from "../pages/Chat/ChatPopover";
-import { useDate } from "../hooks/useDate";
 import ColorModeContext from "../layout/themeContext";
+import { i18n } from "../translate/i18n";
+import toastError from "../errors/toastError";
+import { useDate } from "../hooks/useDate";
 
 const drawerWidth = 240;
 
@@ -31,15 +30,12 @@ const useStyles = makeStyles((theme) => ({
     height: "100vh",
     backgroundColor: theme.palette.fancyBackground,
     '& .MuiButton-outlinedPrimary': {
-      color: theme.mode === 'light' ? '#FFF' : '#FFF',
-      backgroundColor: theme.mode === 'light' ? '#012489' : '#ffffff',
+      color: '#FFF',
+      backgroundColor: theme.palette.mode === 'light' ? '#012489' : '#ffffff',
     },
     '& .MuiTab-textColorPrimary.Mui-selected': {
-      color: theme.mode === 'light' ? '#012489' : '#FFF',
+      color: theme.palette.mode === 'light' ? '#012489' : '#FFF',
     },
-  },
-  avatar: {
-    width: "100%",
   },
   toolbar: {
     paddingRight: 24,
@@ -68,8 +64,8 @@ const useStyles = makeStyles((theme) => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
     [theme.breakpoints.down("sm")]: {
-      display: "none"
-    }
+      display: "none",
+    },
   },
   menuButton: {
     marginRight: 36,
@@ -79,21 +75,20 @@ const useStyles = makeStyles((theme) => ({
   },
   title: {
     flexGrow: 1,
-    fontSize: 14,
+    fontSize: 16,
     color: "white",
+    fontWeight: "bold",
   },
   drawerPaper: {
     position: "relative",
-    whiteSpace: "nowrap",
     width: drawerWidth,
     transition: theme.transitions.create("width", {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
     }),
     [theme.breakpoints.down("sm")]: {
-      width: "100%"
+      width: "100%",
     },
-    ...theme.scrollbarStylesSoft
   },
   drawerPaperClose: {
     overflowX: "hidden",
@@ -106,8 +101,8 @@ const useStyles = makeStyles((theme) => ({
       width: theme.spacing(9),
     },
     [theme.breakpoints.down("sm")]: {
-      width: "100%"
-    }
+      width: "100%",
+    },
   },
   appBarSpacer: {
     minHeight: "48px",
@@ -116,22 +111,6 @@ const useStyles = makeStyles((theme) => ({
     flex: 1,
     overflow: "auto",
   },
-  container: {
-    paddingTop: theme.spacing(4),
-    paddingBottom: theme.spacing(4),
-  },
-  paper: {
-    padding: theme.spacing(2),
-    display: "flex",
-    overflow: "auto",
-    flexDirection: "column"
-  },
-  containerWithScroll: {
-    flex: 1,
-    padding: theme.spacing(1),
-    overflowY: "scroll",
-    ...theme.scrollbarStyles,
-  },
   logo: {
     width: "80%",
     height: "auto",
@@ -139,7 +118,6 @@ const useStyles = makeStyles((theme) => ({
     [theme.breakpoints.down("sm")]: {
       width: "auto",
       height: "80%",
-      maxWidth: 180,
     },
   },
   logoutContainer: {
@@ -161,13 +139,16 @@ const LoggedInLayout = ({ children }) => {
   const [drawerVariant, setDrawerVariant] = useState("permanent");
   const { colorMode } = useContext(ColorModeContext);
   const theme = useTheme();
-  const greaterThenSm = useMediaQuery(theme.breakpoints.up("sm"));
+  const greaterThanSm = useMediaQuery(theme.breakpoints.up("sm"));
   const [volume, setVolume] = useState(localStorage.getItem("volume") || 1);
   const { dateToClient } = useDate();
   const socketManager = useContext(SocketContext);
 
   useEffect(() => {
-    setDrawerOpen(window.innerWidth > 1200);
+    const handleResize = () => setDrawerOpen(window.innerWidth > 1200);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   useEffect(() => {
@@ -247,7 +228,7 @@ const LoggedInLayout = ({ children }) => {
           </IconButton>
         </div>
         <Divider />
-        <List className={classes.containerWithScroll}>
+        <List>
           <MainListItems drawerClose={() => window.innerWidth < 600 && setDrawerOpen(false)} collapsed={!drawerOpen} />
         </List>
         <Divider />
@@ -258,11 +239,6 @@ const LoggedInLayout = ({ children }) => {
         </div>
         <Divider />
       </Drawer>
-      <UserModal
-        open={userModalOpen}
-        onClose={() => setUserModalOpen(false)}
-        userId={user?.id}
-      />
       <AppBar
         position="absolute"
         className={clsx(classes.appBar, drawerOpen && classes.appBarShift)}
@@ -278,50 +254,49 @@ const LoggedInLayout = ({ children }) => {
             <MenuIcon />
           </IconButton>
           <Typography component="h2" variant="h6" color="inherit" noWrap className={classes.title}>
-            {greaterThenSm && user?.profile === "admin" && user?.company?.dueDate ? (
-              `Olá ${user.name}, Bem vindo a ${user?.company?.name}! (Ativo até ${dateToClient(user?.company?.dueDate)})`
-            ) : (
-              `Olá ${user.name}, Bem vindo a ${user?.company?.name}!`
-            )}
+            {greaterThanSm && user?.profile === "admin" && user?.name ? user.name : "Welcome"}
           </Typography>
-          <IconButton edge="start" onClick={toggleColorMode}>
-            {theme.mode === 'dark' ? <Brightness7Icon style={{ color: "white" }} /> : <Brightness4Icon style={{ color: "white" }} />}
-          </IconButton>
-          <NotificationsVolume setVolume={setVolume} volume={volume} />
-          <IconButton onClick={handleRefreshPage} aria-label={i18n.t("mainDrawer.appBar.refresh")} color="inherit">
-            <CachedIcon style={{ color: "white" }} />
-          </IconButton>
-          {user.id && <NotificationsPopOver volume={volume} />}
-          <AnnouncementsPopover />
-          <ChatPopover />
-          <IconButton
-            aria-label="account of current user"
-            aria-controls="menu-appbar"
-            aria-haspopup="true"
-            onClick={handleMenu}
-            style={{ color: "white" }}
-          >
-            <AccountCircle />
-          </IconButton>
-          <Menu
-            id="menu-appbar"
-            anchorEl={anchorEl}
-            getContentAnchorEl={null}
-            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-            transformOrigin={{ vertical: "top", horizontal: "right" }}
-            open={menuOpen}
-            onClose={handleCloseMenu}
-          >
-            <MenuItem onClick={handleOpenUserModal}>
-              {i18n.t("mainDrawer.appBar.user.profile")}
-            </MenuItem>
-          </Menu>
+          <div>
+            <IconButton edge="end" aria-label="toggle dark mode" onClick={toggleColorMode}>
+              {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+            </IconButton>
+            <IconButton
+              edge="end"
+              aria-label="refresh page"
+              onClick={handleRefreshPage}
+              color="inherit"
+            >
+              <CachedIcon />
+            </IconButton>
+            <IconButton
+              edge="end"
+              aria-label="notifications"
+              onClick={() => setMenuOpen(!menuOpen)}
+              color="inherit"
+            >
+              <AccountCircle />
+            </IconButton>
+            <Menu
+              anchorEl={anchorEl}
+              open={menuOpen}
+              onClose={handleCloseMenu}
+              MenuListProps={{ 'aria-labelledby': 'basic-button' }}
+            >
+              <MenuItem onClick={handleOpenUserModal}>Profile</MenuItem>
+              <MenuItem onClick={handleClickLogout}>Logout</MenuItem>
+            </Menu>
+            <NotificationsPopOver />
+            <ChatPopover />
+            <AnnouncementsPopover />
+            <NotificationsVolume volume={volume} setVolume={setVolume} />
+          </div>
         </Toolbar>
       </AppBar>
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
         {children}
       </main>
+      {userModalOpen && <UserModal open={userModalOpen} onClose={() => setUserModalOpen(false)} />}
     </div>
   );
 };
