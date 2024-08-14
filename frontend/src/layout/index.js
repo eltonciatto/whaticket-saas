@@ -343,12 +343,16 @@ const LoggedInLayout = ({ children, themeToggle }) => {
             noWrap
             className={classes.title}
           >
-            {user.name}
-            <span style={{ fontSize: 12, marginLeft: 10 }}>
-              {i18n.t("mainDrawer.appBar.user.lastSeen")}{" "}
-              {moment(user.lastLogin).fromNow()} (
-              {dateToClient(user.lastLogin).formattedDate})
-            </span>
+            {/* {greaterThenSm && user?.profile === "admin" && getDateAndDifDays(user?.company?.dueDate).difData < 7 ? ( */}
+            {greaterThenSm && user?.profile === "admin" && user?.company?.dueDate ? (
+              <>
+                Bem vindo <b>{user.name}</b>, a <b>{user?.company?.name}</b>! (Ativo até {dateToClient(user?.company?.dueDate)})
+              </>
+            ) : (
+              <>
+                Bem vindo  <b>{user.name}</b>, a <b>{user?.company?.name}</b>!
+              </>
+            )}
           </Typography>
 
           <IconButton
