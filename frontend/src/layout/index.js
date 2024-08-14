@@ -1,5 +1,6 @@
 import React, { useState, useContext, useEffect } from "react";
 import clsx from "clsx";
+import moment from "moment";
 import {
   makeStyles,
   Drawer,
@@ -26,6 +27,7 @@ import NotificationsVolume from "../components/NotificationsVolume";
 import UserModal from "../components/UserModal";
 import { AuthContext } from "../context/Auth/AuthContext";
 import BackdropLoading from "../components/BackdropLoading";
+import DarkMode from "../components/DarkMode";
 import { i18n } from "../translate/i18n";
 import toastError from "../errors/toastError";
 import AnnouncementsPopover from "../components/AnnouncementsPopover";
@@ -33,6 +35,8 @@ import AnnouncementsPopover from "../components/AnnouncementsPopover";
 import logo from "../assets/logo.png";
 import { SocketContext } from "../context/Socket/SocketContext";
 import ChatPopover from "../pages/Chat/ChatPopover";
+
+import { useDate } from "../hooks/useDate";
 
 import ColorModeContext from "../layout/themeContext";
 import Brightness4Icon from '@material-ui/icons/Brightness4';
@@ -50,19 +54,19 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: theme.palette.fancyBackground,
     '& .MuiButton-outlinedPrimary': {
       color: theme.mode === 'light' ? '#FFF' : '#FFF',
-      backgroundColor: theme.mode === 'light' ? '#012489' : '#ffffff',
+	  backgroundColor: theme.mode === 'light' ? '#012489' : '#ffffff',
+      //border: theme.mode === 'light' ? '1px solid rgba(0 124 102)' : '1px solid rgba(255, 255, 255, 0.5)',
     },
     '& .MuiTab-textColorPrimary.Mui-selected': {
       color: theme.mode === 'light' ? '#012489' : '#FFF',
-    },
-    zoom: 1, // Para garantir que o zoom da página não afete o layout
+    }
   },
   avatar: {
     width: "100%",
   },
   toolbar: {
-    paddingRight: 24,
-    color: "white",
+    paddingRight: 24, // keep right padding when drawer closed
+    color: theme.palette.dark.main,
     background: theme.palette.barraSuperior,
   },
   toolbarIcon: {
@@ -95,16 +99,14 @@ const useStyles = makeStyles((theme) => ({
   },
   menuButton: {
     marginRight: 36,
-    color: "white",
   },
   menuButtonHidden: {
     display: "none",
   },
   title: {
     flexGrow: 1,
-    fontSize: 16,
+    fontSize: 14,
     color: "white",
-    fontWeight: "bold",
   },
   drawerPaper: {
     position: "relative",
@@ -139,7 +141,7 @@ const useStyles = makeStyles((theme) => ({
   content: {
     flex: 1,
     overflow: "auto",
-    marginTop: 16, // Espaço extra entre a barra superior e os itens do menu
+
   },
   container: {
     paddingTop: theme.spacing(4),
@@ -157,7 +159,9 @@ const useStyles = makeStyles((theme) => ({
     overflowY: "scroll",
     ...theme.scrollbarStyles,
   },
-  NotificationsPopOver: {},
+  NotificationsPopOver: {
+    // color: theme.barraSuperior.secondary.main,
+  },
   logo: {
     width: "80%",
     height: "auto",
@@ -169,30 +173,26 @@ const useStyles = makeStyles((theme) => ({
     },
     logo: theme.logo
   },
+ // ... outros estilos
   logoutContainer: {
-    marginTop: 'auto', 
+    marginTop: 'auto',  // Move o item de logout para a parte inferior
     padding: theme.spacing(2),
-    display: 'none' // Removendo o botão de logout do menu lateral
   },
   logoutButton: {
-    width: '100%',  
-  },
-  icon: {
-    color: "white",
-  },
-  menuButtonChevron: {
-    color: 'black', // Preto para o ícone de fechar o menu
+    width: '100%',  // Faz o botão ocupar toda a largura do container
   },
 }));
 
-const LoggedInLayout = ({ children }) => {
+const LoggedInLayout = ({ children, themeToggle }) => {
   const classes = useStyles();
   const [userModalOpen, setUserModalOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const { handleLogout, loading, user } = useContext(AuthContext);
+  const { handleLogout, loading } = useContext(AuthContext);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerVariant, setDrawerVariant] = useState("permanent");
+  // const [dueDate, setDueDate] = useState("");
+  const { user } = useContext(AuthContext);
 
   const theme = useTheme();
   const { colorMode } = useContext(ColorModeContext);
@@ -200,15 +200,70 @@ const LoggedInLayout = ({ children }) => {
 
   const [volume, setVolume] = useState(localStorage.getItem("volume") || 1);
 
+  const { dateToClient } = useDate();
+
+
+  //################### CODIGOS DE TESTE #########################################
+  // useEffect(() => {
+  //   navigator.getBattery().then((battery) => {
+  //     console.log(`Battery Charging: ${battery.charging}`);
+  //     console.log(`Battery Level: ${battery.level * 100}%`);
+  //     console.log(`Charging Time: ${battery.chargingTime}`);
+  //     console.log(`Discharging Time: ${battery.dischargingTime}`);
+  //   })
+  // }, []);
+
+  // useEffect(() => {
+  //   const geoLocation = navigator.geolocation
+
+  //   geoLocation.getCurrentPosition((position) => {
+  //     let lat = position.coords.latitude;
+  //     let long = position.coords.longitude;
+
+  //     console.log('latitude: ', lat)
+  //     console.log('longitude: ', long)
+  //   })
+  // }, []);
+
+  // useEffect(() => {
+  //   const nucleos = window.navigator.hardwareConcurrency;
+
+  //   console.log('Nucleos: ', nucleos)
+  // }, []);
+
+  // useEffect(() => {
+  //   console.log('userAgent', navigator.userAgent)
+  //   if (
+  //     navigator.userAgent.match(/Android/i)
+  //     || navigator.userAgent.match(/webOS/i)
+  //     || navigator.userAgent.match(/iPhone/i)
+  //     || navigator.userAgent.match(/iPad/i)
+  //     || navigator.userAgent.match(/iPod/i)
+  //     || navigator.userAgent.match(/BlackBerry/i)
+  //     || navigator.userAgent.match(/Windows Phone/i)
+  //   ) {
+  //     console.log('é mobile ', true) //celular
+  //   }
+  //   else {
+  //     console.log('não é mobile: ', false) //nao é celular
+  //   }
+  // }, []);
+  //##############################################################################
+
   const socketManager = useContext(SocketContext);
 
   useEffect(() => {
-    setDrawerOpen(document.body.offsetWidth > 1200);
+    if (document.body.offsetWidth > 1200) {
+      setDrawerOpen(true);
+    }
   }, []);
 
   useEffect(() => {
-    const isMobile = document.body.offsetWidth < 600;
-    setDrawerVariant(isMobile ? "temporary" : "permanent");
+    if (document.body.offsetWidth < 600) {
+      setDrawerVariant("temporary");
+    } else {
+      setDrawerVariant("permanent");
+    }
   }, [drawerOpen]);
 
   useEffect(() => {
@@ -266,17 +321,22 @@ const LoggedInLayout = ({ children }) => {
 
   const handleRefreshPage = () => {
     window.location.reload(false);
+  }
+
+  const handleMenuItemClick = () => {
+    const { innerWidth: width } = window;
+    if (width <= 600) {
+      setDrawerOpen(false);
+    }
   };
 
   const toggleColorMode = () => {
     colorMode.toggleColorMode();
-  };
+  }
 
   if (loading) {
     return <BackdropLoading />;
   }
-
-  const greetingMessage = `Bem-vindo, ${user?.name}! Que tal explorar as oportunidades de hoje?`;
 
   return (
     <div className={classes.root}>
@@ -292,31 +352,37 @@ const LoggedInLayout = ({ children }) => {
         open={drawerOpen}
       >
         <div className={classes.toolbarIcon}>
+          <img src={logo} className={classes.logo} alt="logo" />
           <IconButton onClick={() => setDrawerOpen(!drawerOpen)}>
-            <ChevronLeftIcon className={classes.menuButtonChevron} />
+            <ChevronLeftIcon />
           </IconButton>
         </div>
         <Divider />
-        <List>
-          <MainListItems />
+        <List className={classes.containerWithScroll}>
+          <MainListItems drawerClose={drawerClose} collapsed={!drawerOpen} />
         </List>
-        <div className={classes.logoutContainer}>
-          <MenuItem onClick={handleClickLogout} className={classes.logoutButton}>
-            <AccountCircle className={classes.icon} />
-            <Typography variant="subtitle1" style={{ marginLeft: 10, color: "white" }}>
-              {i18n.t("mainDrawer.appBar.user.logout")}
-            </Typography>
-          </MenuItem>
-        </div>
+	<Divider />
+  <div className={classes.logoutContainer}>
+    <MenuItem onClick={handleClickLogout} className={classes.logoutButton}>
+      {i18n.t("mainDrawer.appBar.user.logout")}
+    </MenuItem>
+  </div>
+        <Divider />
       </Drawer>
+      <UserModal
+        open={userModalOpen}
+        onClose={() => setUserModalOpen(false)}
+        userId={user?.id}
+      />
       <AppBar
         position="absolute"
         className={clsx(classes.appBar, drawerOpen && classes.appBarShift)}
+        color="primary"
       >
-        <Toolbar className={classes.toolbar}>
+        <Toolbar variant="dense" className={classes.toolbar}>
           <IconButton
             edge="start"
-            color="inherit"
+            variant="contained"
             aria-label="open drawer"
             onClick={() => setDrawerOpen(!drawerOpen)}
             className={clsx(
@@ -324,39 +390,70 @@ const LoggedInLayout = ({ children }) => {
               drawerOpen && classes.menuButtonHidden
             )}
           >
-            <MenuIcon style={{ color: 'white' }} />
+            <MenuIcon />
           </IconButton>
-          <Typography component="h1" variant="h6" noWrap className={classes.title}>
-            {greetingMessage}
+
+          <Typography
+            component="h2"
+            variant="h6"
+            color="inherit"
+            noWrap
+            className={classes.title}
+          >
+            {/* {greaterThenSm && user?.profile === "admin" && getDateAndDifDays(user?.company?.dueDate).difData < 7 ? ( */}
+            {greaterThenSm && user?.profile === "admin" && user?.company?.dueDate ? (
+              <>
+                Olá <b>{user.name}</b>, Bem vindo a <b>{user?.company?.name}</b>! (Ativo até {dateToClient(user?.company?.dueDate)})
+              </>
+            ) : (
+              <>
+                Olá  <b>{user.name}</b>, Bem vindo a <b>{user?.company?.name}</b>!
+              </>
+            )}
           </Typography>
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <IconButton color="inherit" onClick={handleRefreshPage}>
-              <CachedIcon style={{ color: 'white' }} />
-            </IconButton>
-            <NotificationsPopOver className={classes.NotificationsPopOver} />
-            <AnnouncementsPopover />
-            <NotificationsVolume volume={volume} setVolume={setVolume} />
-            <ChatPopover />
-            <IconButton color="inherit" onClick={toggleColorMode}>
-              {theme.palette.type === 'dark' ? <Brightness7Icon style={{ color: "white" }} /> : <Brightness4Icon style={{ color: "white" }} />}
-            </IconButton>
+
+          <IconButton edge="start" onClick={toggleColorMode}>
+            {theme.mode === 'dark' ? <Brightness7Icon style={{ color: "white" }} /> : <Brightness4Icon style={{ color: "white" }} />}
+          </IconButton>
+
+          <NotificationsVolume
+            setVolume={setVolume}
+            volume={volume}
+          />
+
+          <IconButton
+            onClick={handleRefreshPage}
+            aria-label={i18n.t("mainDrawer.appBar.refresh")}
+            color="inherit"
+          >
+            <CachedIcon style={{ color: "white" }} />
+          </IconButton>
+
+          {user.id && <NotificationsPopOver volume={volume} />}
+
+          <AnnouncementsPopover />
+
+          <ChatPopover />
+
+          <div>
             <IconButton
               aria-label="account of current user"
               aria-controls="menu-appbar"
               aria-haspopup="true"
               onClick={handleMenu}
-              color="inherit"
+              variant="contained"
+              style={{ color: "white" }}
             >
-              <AccountCircle style={{ color: 'white' }} />
+              <AccountCircle />
             </IconButton>
             <Menu
               id="menu-appbar"
               anchorEl={anchorEl}
+              getContentAnchorEl={null}
               anchorOrigin={{
-                vertical: "top",
+                vertical: "bottom",
                 horizontal: "right",
               }}
-              keepMounted
               transformOrigin={{
                 vertical: "top",
                 horizontal: "right",
@@ -364,7 +461,6 @@ const LoggedInLayout = ({ children }) => {
               open={menuOpen}
               onClose={handleCloseMenu}
             >
-              <MenuItem disabled>{user?.name}</MenuItem>
               <MenuItem onClick={handleOpenUserModal}>
                 {i18n.t("mainDrawer.appBar.user.profile")}
               </MenuItem>
@@ -374,13 +470,9 @@ const LoggedInLayout = ({ children }) => {
       </AppBar>
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
-        {children}
+
+        {children ? children : null}
       </main>
-      <UserModal
-        open={userModalOpen}
-        onClose={() => setUserModalOpen(false)}
-        userId={user?.id}
-      />
     </div>
   );
 };
