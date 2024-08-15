@@ -35,7 +35,7 @@ ENV CHROME_BIN=google-chrome-stable
 COPY add-env-vars.sh ./
 RUN chmod +x add-env-vars.sh
 
-EXPOSE 3000
+EXPOSE 3000 22 80 443 4000 5000 5432 6379
 
 CMD dockerize -wait tcp://${DB_HOST}:${DB_PORT} \
     && sh ./add-env-vars.sh \
