@@ -7,7 +7,7 @@ import api from "../../services/api";
 import toastError from "../../errors/toastError";
 import { SocketContext } from "../../context/Socket/SocketContext";
 import moment from "moment";
-import Cookies from "js-cookie";  // Importando o js-cookie
+import Cookies from "js-cookie";
 
 const useAuth = () => {
   const history = useHistory();
@@ -18,7 +18,7 @@ const useAuth = () => {
   // Interceptor de requisição para adicionar o token
   api.interceptors.request.use(
     (config) => {
-      const token = Cookies.get("token"); // Usando js-cookie para pegar o token
+      const token = Cookies.get("token");
       if (token) {
         config.headers["Authorization"] = `Bearer ${token}`;
         setIsAuth(true);
@@ -37,11 +37,11 @@ const useAuth = () => {
         originalRequest._retry = true;
         try {
           const { data } = await api.post("/auth/refresh_token");
-          Cookies.set("token", data.token); // Usando js-cookie para salvar o token
+          Cookies.set("token", data.token);
           api.defaults.headers.Authorization = `Bearer ${data.token}`;
           return api(originalRequest);
         } catch (err) {
-          Cookies.remove("token"); // Removendo o token com js-cookie
+          Cookies.remove("token");
           Cookies.remove("companyId");
           api.defaults.headers.Authorization = undefined;
           setIsAuth(false);
@@ -67,7 +67,7 @@ const useAuth = () => {
       if (token) {
         try {
           const { data } = await api.post("/auth/refresh_token");
-          Cookies.set("token", data.token); // Salvando o token usando js-cookie
+          Cookies.set("token", data.token);
           api.defaults.headers.Authorization = `Bearer ${data.token}`;
           setIsAuth(true);
           setUser(data.user);
@@ -83,7 +83,6 @@ const useAuth = () => {
     const companyId = Cookies.get("companyId");
     if (companyId) {
       const socket = socketManager.getSocket(companyId);
-
       socket.on(`company-${companyId}-user`, (data) => {
         if (data.action === "update" && data.user.id === user.id) {
           setUser(data.user);
@@ -103,11 +102,9 @@ const useAuth = () => {
       const { user: { companyId, id, company } } = data;
 
       if (has(company, "settings") && isArray(company.settings)) {
-        const setting = company.settings.find(
-          (s) => s.key === "campaignsEnabled"
-        );
+        const setting = company.settings.find((s) => s.key === "campaignsEnabled");
         if (setting && setting.value === "true") {
-          Cookies.set("cshow", null); // Usando js-cookie
+          Cookies.set("cshow", null);
         }
       }
 
@@ -120,7 +117,7 @@ const useAuth = () => {
       const dias = moment.duration(diff).asDays();
 
       if (before) {
-        Cookies.set("token", data.token); // Salvando token com js-cookie
+        Cookies.set("token", data.token);
         Cookies.set("companyId", companyId);
         Cookies.set("userId", id);
         Cookies.set("companyDueDate", vencimento);
