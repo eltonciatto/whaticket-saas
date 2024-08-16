@@ -8,14 +8,11 @@ import {
   ListItemText,
   makeStyles,
 } from "@material-ui/core";
-
 import { useHistory, useParams } from "react-router-dom";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import { useDate } from "../../hooks/useDate";
-
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
-
 import ConfirmationModal from "../../components/ConfirmationModal";
 import api from "../../services/api";
 
@@ -23,23 +20,23 @@ const useStyles = makeStyles((theme) => ({
   mainContainer: {
     display: "flex",
     flexDirection: "column",
-    position: "relative",
     flex: 1,
     height: "calc(100% - 58px)",
     overflow: "hidden",
-    borderRadius: 0,
-    backgroundColor: theme.palette.boxlist, //DARK MODE PLW DESIGN//
+    backgroundColor: theme.palette.boxlist, // Dark mode custom color
   },
   chatList: {
     display: "flex",
     flexDirection: "column",
-    position: "relative",
     flex: 1,
-    overflowY: "scroll",
+    overflowY: "auto",
     ...theme.scrollbarStyles,
   },
   listItem: {
     cursor: "pointer",
+    "&:hover": {
+      backgroundColor: theme.palette.action.hover,
+    },
   },
 }));
 
@@ -48,8 +45,6 @@ export default function ChatList({
   handleSelectChat,
   handleDeleteChat,
   handleEditChat,
-  pageInfo,
-  loading,
 }) {
   const classes = useStyles();
   const history = useHistory();
@@ -65,7 +60,9 @@ export default function ChatList({
     if (unreadMessages(chat) > 0) {
       try {
         await api.post(`/chats/${chat.id}/read`, { userId: user.id });
-      } catch (err) {}
+      } catch (err) {
+        console.error("Failed to mark chat as read:", err);
+      }
     }
 
     if (id !== chat.uuid) {
@@ -76,19 +73,19 @@ export default function ChatList({
 
   const handleDelete = () => {
     handleDeleteChat(selectedChat);
+    setConfirmModalOpen(false);
   };
 
   const unreadMessages = (chat) => {
     const currentUser = chat.users.find((u) => u.userId === user.id);
-    return currentUser.unreads;
+    return currentUser?.unreads || 0;
   };
 
   const getPrimaryText = (chat) => {
-    const mainText = chat.title;
     const unreads = unreadMessages(chat);
     return (
       <>
-        {mainText}
+        {chat.title}
         {unreads > 0 && (
           <Chip
             size="small"
@@ -102,15 +99,15 @@ export default function ChatList({
   };
 
   const getSecondaryText = (chat) => {
-    return chat.lastMessage !== ""
+    return chat.lastMessage
       ? `${datetimeToClient(chat.updatedAt)}: ${chat.lastMessage}`
       : "";
   };
 
   const getItemStyle = (chat) => {
     return {
-      borderLeft: chat.uuid === id ? "6px solid #012489" : null,
-      backgroundColor: chat.uuid === id ? "theme.palette.chatlist" : null,
+      borderLeft: chat.uuid === id ? "6px solid #012489" : "none",
+      backgroundColor: chat.uuid === id ? theme.palette.action.selected : "none",
     };
   };
 
@@ -119,7 +116,7 @@ export default function ChatList({
       <ConfirmationModal
         title={"Excluir Conversa"}
         open={confirmationModal}
-        onClose={setConfirmModalOpen}
+        onClose={() => setConfirmModalOpen(false)}
         onConfirm={handleDelete}
       >
         Esta ação não pode ser revertida, confirmar?
@@ -127,50 +124,46 @@ export default function ChatList({
       <div className={classes.mainContainer}>
         <div className={classes.chatList}>
           <List>
-            {Array.isArray(chats) &&
-              chats.length > 0 &&
-              chats.map((chat, key) => (
-                <ListItem
-                  onClick={() => goToMessages(chat)}
-                  key={key}
-                  className={classes.listItem}
-                  style={getItemStyle(chat)}
-                  button
-                >
-                  <ListItemText
-                    primary={getPrimaryText(chat)}
-                    secondary={getSecondaryText(chat)}
-                  />
-                  {chat.ownerId === user.id && (
-                    <ListItemSecondaryAction>
-                      <IconButton
-                        onClick={() => {
-                          goToMessages(chat).then(() => {
-                            handleEditChat(chat);
-                          });
-                        }}
-                        edge="end"
-                        aria-label="delete"
-                        size="small"
-                        style={{ marginRight: 5 }}
-                      >
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton
-                        onClick={() => {
-                          setSelectedChat(chat);
-                          setConfirmModalOpen(true);
-                        }}
-                        edge="end"
-                        aria-label="delete"
-                        size="small"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </ListItemSecondaryAction>
-                  )}
-                </ListItem>
-              ))}
+            {chats.map((chat, key) => (
+              <ListItem
+                key={key}
+                onClick={() => goToMessages(chat)}
+                className={classes.listItem}
+                style={getItemStyle(chat)}
+                button
+              >
+                <ListItemText
+                  primary={getPrimaryText(chat)}
+                  secondary={getSecondaryText(chat)}
+                />
+                {chat.ownerId === user.id && (
+                  <ListItemSecondaryAction>
+                    <IconButton
+                      onClick={() => {
+                        goToMessages(chat).then(() => handleEditChat(chat));
+                      }}
+                      edge="end"
+                      aria-label="edit"
+                      size="small"
+                      style={{ marginRight: 5 }}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      onClick={() => {
+                        setSelectedChat(chat);
+                        setConfirmModalOpen(true);
+                      }}
+                      edge="end"
+                      aria-label="delete"
+                      size="small"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                )}
+              </ListItem>
+            ))}
           </List>
         </div>
       </div>
