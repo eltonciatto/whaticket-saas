@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -18,17 +18,7 @@ import Typography from "@material-ui/core/Typography";
 import api from '../../services/api';
 import { format } from 'date-fns';
 import { toast } from 'react-toastify';
-import { makeStyles } from "@material-ui/core/styles";
 import './button.css';
-
-const useStyles = makeStyles((theme) => ({
-    container: {
-        paddingTop: theme.spacing(1),
-        paddingBottom: theme.padding,
-        paddingLeft: theme.spacing(1),
-        paddingRight: theme.spacing(2),
-    }
-}));
 
 ChartJS.register(
     CategoryScale,
@@ -40,7 +30,7 @@ ChartJS.register(
     ChartDataLabels
 );
 
-export const options = {
+const options = {
     responsive: true,
     plugins: {
         legend: {
@@ -49,7 +39,7 @@ export const options = {
         },
         title: {
             display: true,
-            text: 'Gráfico de Conversas',
+            text: 'Gráfico de Conversas por Usuário',
             position: 'left',
         },
         datalabels: {
@@ -63,79 +53,81 @@ export const options = {
             font: {
                 size: 20,
                 weight: "bold"
-
             },
         }
     },
 };
 
 export const ChatsUser = () => {
-    // const classes = useStyles();
     const [initialDate, setInitialDate] = useState(new Date());
     const [finalDate, setFinalDate] = useState(new Date());
     const [ticketsData, setTicketsData] = useState({ data: [] });
 
     const companyId = localStorage.getItem("companyId");
 
-    useEffect(() => {
-        handleGetTicketsInformation();
-    }, []);
-
-    const dataCharts = {
-
-        labels: ticketsData && ticketsData?.data.length > 0 && ticketsData?.data.map((item) => item.nome),
-        datasets: [
-            {
-                data: ticketsData?.data.length > 0 && ticketsData?.data.map((item, index) => {
-                    return item.quantidade
-                }),
-                backgroundColor: '#2DDD7F',
-            },
-
-        ],
-    };
-
-    const handleGetTicketsInformation = async () => {
+    const handleGetTicketsInformation = useCallback(async () => {
+        if (initialDate > finalDate) {
+            toast.error("A data inicial não pode ser maior que a data final");
+            return;
+        }
         try {
-
-            const { data } = await api.get(`/dashboard/ticketsUsers?initialDate=${format(initialDate, 'yyyy-MM-dd')}&finalDate=${format(finalDate, 'yyyy-MM-dd')}&companyId=${companyId}`);
+            const { data } = await api.get(`/dashboard/ticketsUsers`, {
+                params: {
+                    initialDate: format(initialDate, 'yyyy-MM-dd'),
+                    finalDate: format(finalDate, 'yyyy-MM-dd'),
+                    companyId
+                }
+            });
             setTicketsData(data);
         } catch (error) {
-            toast.error('Erro ao obter informações da conversa');
+            toast.error('Erro ao obter informações das conversas');
         }
-    }
+    }, [initialDate, finalDate, companyId]);
+
+    useEffect(() => {
+        handleGetTicketsInformation();
+    }, [handleGetTicketsInformation]);
+
+    const dataCharts = useMemo(() => ({
+        labels: ticketsData.data.map(item => item.nome),
+        datasets: [
+            {
+                data: ticketsData.data.map(item => item.quantidade),
+                backgroundColor: '#2DDD7F',
+            },
+        ],
+    }), [ticketsData]);
 
     return (
         <>
             <Typography component="h2" variant="h6" color="primary" gutterBottom>
-                Total de Conversas por Usuários
+                Total de Conversas por Usuário
             </Typography>
 
-            <Stack direction={'row'} spacing={2} alignItems={'center'} sx={{ my: 2, }} >
-
+            <Stack direction={'row'} spacing={2} alignItems={'center'} sx={{ my: 2 }}>
                 <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={brLocale}>
                     <DatePicker
                         value={initialDate}
-                        onChange={(newValue) => { setInitialDate(newValue) }}
-                        label="Inicio"
-                        renderInput={(params) => <TextField fullWidth {...params} sx={{ width: '20ch' }} />}
-
+                        onChange={setInitialDate}
+                        label="Início"
+                        renderInput={(params) => <TextField {...params} sx={{ width: '20ch' }} />}
                     />
                 </LocalizationProvider>
 
                 <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={brLocale}>
                     <DatePicker
                         value={finalDate}
-                        onChange={(newValue) => { setFinalDate(newValue) }}
+                        onChange={setFinalDate}
                         label="Fim"
-                        renderInput={(params) => <TextField fullWidth {...params} sx={{ width: '20ch' }} />}
+                        renderInput={(params) => <TextField {...params} sx={{ width: '20ch' }} />}
                     />
                 </LocalizationProvider>
 
-                <Button className="buttonHover" onClick={handleGetTicketsInformation} variant='contained'>Filtrar</Button>
-
+                <Button className="buttonHover" onClick={handleGetTicketsInformation} variant='contained'>
+                    Filtrar
+                </Button>
             </Stack>
-            <Bar options={options} data={dataCharts} style={{ maxWidth: '100%', maxHeight: '280px', }} />
+            <Bar options={options} data={dataCharts} style={{ maxWidth: '100%', maxHeight: '280px' }} />
         </>
     );
-}
+};
