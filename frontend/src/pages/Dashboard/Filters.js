@@ -1,17 +1,10 @@
-import React from "react"; // { useContext }
-// import { AuthContext } from "../../context/Auth/AuthContext";
-
+import React from "react";
 import {
     Button,
-    // FormControl,
     Grid,
-    // InputLabel,
-    // MenuItem,
     Paper,
-    // Select,
     TextField,
 } from "@material-ui/core";
-
 import Title from "./Title";
 
 const Filters = ({
@@ -23,12 +16,7 @@ const Filters = ({
     setQueueTicket,
     queueTicket,
 }) => {
-    // const { user } = useContext(AuthContext);
-
-    const [
-        queues,
-        // setQueues
-    ] = React.useState(queueTicket);
+    const [queues, setQueues] = React.useState(queueTicket);
     const [dateStart, setDateStart] = React.useState(dateStartTicket);
     const [dateEnd, setDateEnd] = React.useState(dateEndTicket);
 
@@ -37,6 +25,7 @@ const Filters = ({
             <Paper className={classes.customFixedHeightPaperLg} elevation={6}>
                 <Title>Filtros</Title>
                 <Grid container spacing={3}>
+                    {/* Se necessário, reative o filtro de departamentos */}
                     {/* <Grid item xs={12} sm={6} md={3}>
                         <FormControl fullWidth>
                             <InputLabel id="queue-label">
@@ -45,8 +34,7 @@ const Filters = ({
                             <Select
                                 labelId="queue-label"
                                 id="queue-select"
-                                defaultValue={queueTicket}
-                                label="Departamentos"
+                                value={queues}
                                 onChange={(e) => setQueues(e.target.value)}
                             >
                                 <MenuItem value={false}>
@@ -70,7 +58,7 @@ const Filters = ({
                                 shrink: true,
                             }}
                             type="date"
-                            defaultValue={dateStart}
+                            value={dateStart}
                             onChange={(e) => setDateStart(e.target.value)}
                         />
                     </Grid>
@@ -83,7 +71,7 @@ const Filters = ({
                                 shrink: true,
                             }}
                             type="date"
-                            defaultValue={dateEnd}
+                            value={dateEnd}
                             onChange={(e) => setDateEnd(e.target.value)}
                         />
                     </Grid>
