@@ -5,32 +5,25 @@ import { AuthContext } from "../context/Auth/AuthContext";
 import BackdropLoading from "../components/BackdropLoading";
 
 const Route = ({ component: Component, isPrivate = false, ...rest }) => {
-	const { isAuth, loading } = useContext(AuthContext);
+  const { isAuth, loading } = useContext(AuthContext);
 
-	if (!isAuth && isPrivate) {
-		return (
-			<>
-				{loading && <BackdropLoading />}
-				<Redirect to={{ pathname: "/login", state: { from: rest.location } }} />
-			</>
-		);
-	}
+  // Exibe o loading enquanto a autenticação está sendo verificada
+  if (loading) {
+    return <BackdropLoading />;
+  }
 
-	if (isAuth && !isPrivate) {
-		return (
-			<>
-				{loading && <BackdropLoading />}
-				<Redirect to={{ pathname: "/", state: { from: rest.location } }} />;
-			</>
-		);
-	}
+  // Redireciona para login se a rota é privada e o usuário não está autenticado
+  if (!isAuth && isPrivate) {
+    return <Redirect to={{ pathname: "/login", state: { from: rest.location } }} />;
+  }
 
-	return (
-		<>
-			{loading && <BackdropLoading />}
-			<RouterRoute {...rest} component={Component} />
-		</>
-	);
+  // Redireciona para a home se a rota é pública e o usuário está autenticado
+  if (isAuth && !isPrivate) {
+    return <Redirect to={{ pathname: "/", state: { from: rest.location } }} />;
+  }
+
+  // Renderiza a rota normalmente se as condições acima não forem atendidas
+  return <RouterRoute {...rest} component={Component} />;
 };
 
 export default Route;
