@@ -360,7 +360,7 @@ const Dashboard = () => {
               <Grid container spacing={3}>
                 <Grid item xs={8}>
                   <Typography component="h3" variant="h6" paragraph>
-                    T.M. de Conversa
+                    Tempo Médio de Conversa
                   </Typography>
                   <Typography component="h1" variant="h4">
                     {formatTime(counters.avgSupportTime)}
@@ -378,7 +378,7 @@ const Dashboard = () => {
               <Grid container spacing={3}>
                 <Grid item xs={8}>
                   <Typography component="h3" variant="h6" paragraph>
-                    T.M. de Espera
+                    Tempo Médio de Espera
                   </Typography>
                   <Typography component="h1" variant="h4">
                     {formatTime(counters.avgWaitTime)}
