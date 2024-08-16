@@ -7,6 +7,7 @@ import {
   ListItemSecondaryAction,
   ListItemText,
   makeStyles,
+  useTheme, // Import useTheme corretamente
 } from "@material-ui/core";
 import { useHistory, useParams } from "react-router-dom";
 import { AuthContext } from "../../context/Auth/AuthContext";
@@ -46,6 +47,11 @@ export default function ChatList({
   handleDeleteChat,
   handleEditChat,
 }) {
+  const theme = useTheme(); // Aqui o useTheme é chamado corretamente dentro do componente
+  if (!theme) {
+    console.error("Theme not found");
+  }
+
   const classes = useStyles();
   const history = useHistory();
   const { user } = useContext(AuthContext);
