@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { makeStyles, Paper, Typography, Modal, IconButton } from "@material-ui/core";
+import { makeStyles, Paper, Typography, Modal } from "@material-ui/core";
 import MainContainer from "../../components/MainContainer";
 import MainHeader from "../../components/MainHeader";
 import MainHeaderButtonsWrapper from "../../components/MainHeaderButtonsWrapper";
@@ -7,68 +7,65 @@ import Title from "../../components/Title";
 import { i18n } from "../../translate/i18n";
 import useHelps from "../../hooks/useHelps";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   mainPaperContainer: {
-    overflowY: 'auto',
-    maxHeight: 'calc(100vh - 200px)',
+    overflowY: "auto",
+    maxHeight: "calc(100vh - 200px)",
+    padding: theme.spacing(2),
   },
   mainPaper: {
-    width: '100%',
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-    gap: theme.spacing(3),
-    padding: theme.spacing(2),
-    marginBottom: theme.spacing(3),
+    width: "100%",
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+    gap: theme.spacing(2),
+    padding: theme.spacing(1),
   },
   helpPaper: {
-    position: 'relative',
-    width: '100%',
-    minHeight: '340px',
+    position: "relative",
+    width: "100%",
+    minHeight: "300px",
     padding: theme.spacing(2),
     boxShadow: theme.shadows[3],
     borderRadius: theme.spacing(1),
-    cursor: 'pointer',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    maxWidth: '340px',
-  },
-  paperHover: {
-    transition: 'transform 0.3s, box-shadow 0.3s',
-    '&:hover': {
-      transform: 'scale(1.03)',
-      boxShadow: `0 0 8px`,
-      color: theme.palette.primary.main,
+    cursor: "pointer",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+    transition: "transform 0.3s, box-shadow 0.3s",
+    "&:hover": {
+      transform: "scale(1.03)",
+      boxShadow: theme.shadows[6],
     },
   },
   videoThumbnail: {
-    width: '100%',
-    height: 'calc(100% - 56px)',
-    objectFit: 'cover',
-    borderRadius: `${theme.spacing(1)}px ${theme.spacing(1)}px 0 0`,
+    width: "100%",
+    height: "200px",
+    objectFit: "cover",
+    borderRadius: theme.spacing(1),
+    marginBottom: theme.spacing(2),
   },
   videoTitle: {
     marginTop: theme.spacing(1),
-    flex: 1,
+    fontWeight: "bold",
   },
   videoDescription: {
-    maxHeight: '100px',
-    overflow: 'hidden',
+    maxHeight: "60px",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
   videoModal: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
   videoModalContent: {
-    outline: 'none',
-    width: '90%',
-    maxWidth: 1024,
-    aspectRatio: '16/9',
-    position: 'relative',
-    backgroundColor: 'white',
+    width: "90%",
+    maxWidth: "960px",
+    aspectRatio: "16/9",
+    backgroundColor: "white",
     borderRadius: theme.spacing(1),
-    overflow: 'hidden',
+    overflow: "hidden",
+    position: "relative",
   },
 }));
 
@@ -79,13 +76,12 @@ const Helps = () => {
   const [selectedVideo, setSelectedVideo] = useState(null);
 
   useEffect(() => {
-    async function fetchData() {
+    const fetchData = async () => {
       const helps = await list();
       setRecords(helps);
-    }
+    };
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [list]);
 
   const openVideoModal = (video) => {
     setSelectedVideo(video);
@@ -118,7 +114,7 @@ const Helps = () => {
         <div className={classes.videoModalContent}>
           {selectedVideo && (
             <iframe
-              style={{ width: "100%", height: "100%", position: "absolute", top: 0, left: 0 }}
+              style={{ width: "100%", height: "100%" }}
               src={`https://www.youtube.com/embed/${selectedVideo}`}
               title="YouTube video player"
               frameBorder="0"
@@ -133,25 +129,31 @@ const Helps = () => {
 
   const renderHelps = () => {
     return (
-      <>
-        <div className={`${classes.mainPaper} ${classes.mainPaperContainer}`}>
-          {records.length ? records.map((record, key) => (
-            <Paper key={key} className={`${classes.helpPaper} ${classes.paperHover}`} onClick={() => openVideoModal(record.video)}>
+      <div className={classes.mainPaper}>
+        {records.length ? (
+          records.map((record, key) => (
+            <Paper
+              key={key}
+              className={classes.helpPaper}
+              onClick={() => openVideoModal(record.video)}
+            >
               <img
                 src={`https://img.youtube.com/vi/${record.video}/mqdefault.jpg`}
                 alt="Thumbnail"
                 className={classes.videoThumbnail}
               />
-              <Typography variant="button" className={classes.videoTitle}>
+              <Typography variant="subtitle1" className={classes.videoTitle}>
                 {record.title}
               </Typography>
-              <Typography variant="caption" className={classes.videoDescription}>
+              <Typography variant="body2" className={classes.videoDescription}>
                 {record.description}
               </Typography>
             </Paper>
-          )) : null}
-        </div>
-      </>
+          ))
+        ) : (
+          <Typography variant="h6">Nenhum vídeo disponível no momento.</Typography>
+        )}
+      </div>
     );
   };
 
@@ -159,11 +161,11 @@ const Helps = () => {
     <MainContainer>
       <MainHeader>
         <Title>{i18n.t("helps.title")} ({records.length})</Title>
-        <MainHeaderButtonsWrapper></MainHeaderButtonsWrapper>
+        <MainHeaderButtonsWrapper>
+          {/* Espaço para adicionar botões no futuro, caso necessário */}
+        </MainHeaderButtonsWrapper>
       </MainHeader>
-      <div className={classes.mainPaper}>
-        {renderHelps()}
-      </div>
+      <div className={classes.mainPaperContainer}>{renderHelps()}</div>
       {renderVideoModal()}
     </MainContainer>
   );
