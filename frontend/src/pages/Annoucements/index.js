@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useReducer, useContext } from "react";
 import { toast } from "react-toastify";
 import { useHistory } from "react-router-dom";
+import Cookies from "js-cookie";
 
 import { makeStyles } from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
@@ -34,58 +35,51 @@ import { SocketContext } from "../../context/Socket/SocketContext";
 import { AuthContext } from "../../context/Auth/AuthContext";
 
 const reducer = (state, action) => {
-  if (action.type === "LOAD_ANNOUNCEMENTS") {
-    const announcements = action.payload;
-    const newAnnouncements = [];
+  switch (action.type) {
+    case "LOAD_ANNOUNCEMENTS":
+      const announcements = action.payload;
+      const newAnnouncements = [];
 
-    if (isArray(announcements)) {
-      announcements.forEach((announcement) => {
-        const announcementIndex = state.findIndex(
-          (u) => u.id === announcement.id
-        );
-        if (announcementIndex !== -1) {
-          state[announcementIndex] = announcement;
-        } else {
-          newAnnouncements.push(announcement);
-        }
-      });
-    }
+      if (isArray(announcements)) {
+        announcements.forEach((announcement) => {
+          const announcementIndex = state.findIndex(
+            (u) => u.id === announcement.id
+          );
+          if (announcementIndex !== -1) {
+            state[announcementIndex] = announcement;
+          } else {
+            newAnnouncements.push(announcement);
+          }
+        });
+      }
+      return [...state, ...newAnnouncements];
 
-    return [...state, ...newAnnouncements];
-  }
+    case "UPDATE_ANNOUNCEMENTS":
+      const updatedAnnouncement = action.payload;
+      const updatedIndex = state.findIndex((u) => u.id === updatedAnnouncement.id);
 
-  if (action.type === "UPDATE_ANNOUNCEMENTS") {
-    const announcement = action.payload;
-    const announcementIndex = state.findIndex((u) => u.id === announcement.id);
+      if (updatedIndex !== -1) {
+        state[updatedIndex] = updatedAnnouncement;
+        return [...state];
+      } else {
+        return [updatedAnnouncement, ...state];
+      }
 
-    if (announcementIndex !== -1) {
-      state[announcementIndex] = announcement;
-      return [...state];
-    } else {
-      return [announcement, ...state];
-    }
-  }
+    case "DELETE_ANNOUNCEMENT":
+      return state.filter((announcement) => announcement.id !== action.payload);
 
-  if (action.type === "DELETE_ANNOUNCEMENT") {
-    const announcementId = action.payload;
+    case "RESET":
+      return [];
 
-    const announcementIndex = state.findIndex((u) => u.id === announcementId);
-    if (announcementIndex !== -1) {
-      state.splice(announcementIndex, 1);
-    }
-    return [...state];
-  }
-
-  if (action.type === "RESET") {
-    return [];
+    default:
+      return state;
   }
 };
 
 const useStyles = makeStyles((theme) => ({
   mainPaper: {
     flex: 1,
-    // padding: theme.spacing(1),
-    padding: theme.padding,
+    padding: theme.spacing(1),
     overflowY: "scroll",
     ...theme.scrollbarStyles,
   },
@@ -109,17 +103,13 @@ const Announcements = () => {
 
   const socketManager = useContext(SocketContext);
 
-  // trava para nao acessar pagina que não pode  
   useEffect(() => {
-    async function fetchData() {
-      if (!user.super) {
-        toast.error("Esta empresa não possui permissão para acessar essa página! Estamos lhe redirecionando.");
-        setTimeout(() => {
-          history.push(`/`)
-        }, 1000);
-      }
+    if (!user.super) {
+      toast.error("Esta empresa não possui permissão para acessar essa página! Redirecionando...");
+      setTimeout(() => {
+        history.push(`/`);
+      }, 1000);
     }
-    fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -129,7 +119,6 @@ const Announcements = () => {
   }, [searchParam]);
 
   useEffect(() => {
-    setLoading(true);
     const delayDebounceFn = setTimeout(() => {
       fetchAnnouncements();
     }, 500);
@@ -138,10 +127,10 @@ const Announcements = () => {
   }, [searchParam, pageNumber]);
 
   useEffect(() => {
-    const companyId = user.companyId;
+    const companyId = Cookies.get("companyId");
     const socket = socketManager.getSocket(companyId);
 
-    socket.on(`company-announcement`, (data) => {
+    socket.on("company-announcement", (data) => {
       if (data.action === "update" || data.action === "create") {
         dispatch({ type: "UPDATE_ANNOUNCEMENTS", payload: data.record });
       }
@@ -152,18 +141,20 @@ const Announcements = () => {
     return () => {
       socket.disconnect();
     };
-  }, [socketManager, user.companyId]);
+  }, [socketManager]);
 
   const fetchAnnouncements = async () => {
+    setLoading(true);
     try {
       const { data } = await api.get("/announcements/", {
         params: { searchParam, pageNumber },
       });
       dispatch({ type: "LOAD_ANNOUNCEMENTS", payload: data.records });
       setHasMore(data.hasMore);
-      setLoading(false);
     } catch (err) {
       toastError(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -188,11 +179,10 @@ const Announcements = () => {
 
   const handleDeleteAnnouncement = async (announcement) => {
     try {
-      if (announcement.mediaName)
-      await api.delete(`/announcements/${announcement.id}/media-upload`);
-
+      if (announcement.mediaName) {
+        await api.delete(`/announcements/${announcement.id}/media-upload`);
+      }
       await api.delete(`/announcements/${announcement.id}`);
-      
       toast.success(i18n.t("announcements.toasts.deleted"));
     } catch (err) {
       toastError(err);
@@ -209,25 +199,17 @@ const Announcements = () => {
   const handleScroll = (e) => {
     if (!hasMore || loading) return;
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    if (scrollHeight - (scrollTop + 100) < clientHeight) {
+    if (scrollHeight - scrollTop - 100 < clientHeight) {
       loadMore();
     }
   };
 
   const translatePriority = (val) => {
-    if (val === 1) {
-      return "Alta";
-    }
-    if (val === 2) {
-      return "Média";
-    }
-    if (val === 3) {
-      return "Baixa";
-    }
+    return val === 1 ? "Alta" : val === 2 ? "Média" : "Baixa";
   };
 
   return (
-    <MainContainer >
+    <MainContainer>
       <ConfirmationModal
         title={
           deletingAnnouncement &&
@@ -251,13 +233,13 @@ const Announcements = () => {
         announcementId={selectedAnnouncement && selectedAnnouncement.id}
       />
       <MainHeader>
-        <Grid style={{ width: "99.6%" }} container>
-          <Grid xs={12} sm={8} item>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} sm={8}>
             <Title>{i18n.t("announcements.title")} ({announcements.length})</Title>
           </Grid>
-          <Grid xs={12} sm={4} item>
-            <Grid spacing={2} container>
-              <Grid xs={6} sm={6} item>
+          <Grid item xs={12} sm={4}>
+            <Grid container spacing={2} alignItems="center">
+              <Grid item xs={6}>
                 <TextField
                   fullWidth
                   placeholder={i18n.t("announcements.searchPlaceholder")}
@@ -273,7 +255,7 @@ const Announcements = () => {
                   }}
                 />
               </Grid>
-              <Grid xs={6} sm={6} item>
+              <Grid item xs={6}>
                 <Button
                   fullWidth
                   variant="contained"
@@ -313,46 +295,44 @@ const Announcements = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            <>
-              {announcements.map((announcement) => (
-                <TableRow key={announcement.id}>
-                  <TableCell align="center">{announcement.title}</TableCell>
-                  <TableCell align="center">
-                    {translatePriority(announcement.priority)}
-                  </TableCell>
-                  <TableCell align="center">
-                    {announcement.mediaName ?? i18n.t("quickMessages.noAttachment")}
-                  </TableCell>
-                  <TableCell align="center">
-                    {announcement.status ? i18n.t("announcements.active") : i18n.t("announcements.inactive")}
-                  </TableCell>
-                  <TableCell align="center">
-                    <IconButton
-                      size="small"
-                      onClick={() => handleEditAnnouncement(announcement)}
-                    >
-                      <EditIcon />
-                    </IconButton>
+            {announcements.map((announcement) => (
+              <TableRow key={announcement.id}>
+                <TableCell align="center">{announcement.title}</TableCell>
+                <TableCell align="center">
+                  {translatePriority(announcement.priority)}
+                </TableCell>
+                <TableCell align="center">
+                  {announcement.mediaName ?? i18n.t("quickMessages.noAttachment")}
+                </TableCell>
+                <TableCell align="center">
+                  {announcement.status ? i18n.t("announcements.active") : i18n.t("announcements.inactive")}
+                </TableCell>
+                <TableCell align="center">
+                  <IconButton
+                    size="small"
+                    onClick={() => handleEditAnnouncement(announcement)}
+                  >
+                    <EditIcon />
+                  </IconButton>
 
-                    <IconButton
-                      size="small"
-                      onClick={(e) => {
-                        setConfirmModalOpen(true);
-                        setDeletingAnnouncement(announcement);
-                      }}
-                    >
-                      <DeleteOutlineIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {loading && <TableRowSkeleton columns={5} />}
-            </>
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      setConfirmModalOpen(true);
+                      setDeletingAnnouncement(announcement);
+                    }}
+                  >
+                    <DeleteOutlineIcon />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+            {loading && <TableRowSkeleton columns={5} />}
           </TableBody>
         </Table>
       </Paper>
-    </MainContainer >
-  )
+    </MainContainer>
+  );
 };
 
 export default Announcements;
