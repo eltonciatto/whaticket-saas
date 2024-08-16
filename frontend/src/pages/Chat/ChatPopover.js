@@ -23,10 +23,9 @@ import { isArray } from "lodash";
 import { SocketContext } from "../../context/Socket/SocketContext";
 import { useDate } from "../../hooks/useDate";
 import { AuthContext } from "../../context/Auth/AuthContext";
-
-import notifySound from "../../assets/chat_notify.mp3";
 import useSound from "use-sound";
 import { i18n } from "../../translate/i18n";
+import notifySound from "../../assets/chat_notify.mp3";
 
 const useStyles = makeStyles((theme) => ({
   mainPaper: {
@@ -34,174 +33,86 @@ const useStyles = makeStyles((theme) => ({
     maxHeight: 300,
     maxWidth: 500,
     padding: theme.spacing(1),
-    overflowY: "scroll",
+    overflowY: "auto",
     ...theme.scrollbarStyles,
   },
 }));
 
 const reducer = (state, action) => {
-  if (action.type === "LOAD_CHATS") {
-    const chats = action.payload;
-    const newChats = [];
-
-    if (isArray(chats)) {
-      chats.forEach((chat) => {
-        const chatIndex = state.findIndex((u) => u.id === chat.id);
-        if (chatIndex !== -1) {
-          state[chatIndex] = chat;
-        } else {
-          newChats.push(chat);
-        }
-      });
-    }
-
-    return [...state, ...newChats];
-  }
-
-  if (action.type === "UPDATE_CHATS") {
-    const chat = action.payload;
-    const chatIndex = state.findIndex((u) => u.id === chat.id);
-
-    if (chatIndex !== -1) {
-      state[chatIndex] = chat;
-      return [...state];
-    } else {
-      return [chat, ...state];
-    }
-  }
-
-  if (action.type === "DELETE_CHAT") {
-    const chatId = action.payload;
-
-    const chatIndex = state.findIndex((u) => u.id === chatId);
-    if (chatIndex !== -1) {
-      state.splice(chatIndex, 1);
-    }
-    return [...state];
-  }
-
-  if (action.type === "RESET") {
-    return [];
-  }
-
-  if (action.type === "CHANGE_CHAT") {
-    const changedChats = state.map((chat) => {
-      if (chat.id === action.payload.chat.id) {
-        return action.payload.chat;
+  switch (action.type) {
+    case "LOAD_CHATS":
+      return [...state, ...action.payload];
+    case "UPDATE_CHATS":
+      const updatedChatIndex = state.findIndex((chat) => chat.id === action.payload.id);
+      if (updatedChatIndex !== -1) {
+        state[updatedChatIndex] = action.payload;
+        return [...state];
+      } else {
+        return [action.payload, ...state];
       }
-      return chat;
-    });
-    return changedChats;
+    case "DELETE_CHAT":
+      return state.filter((chat) => chat.id !== action.payload);
+    case "RESET":
+      return [];
+    default:
+      return state;
   }
 };
 
 export default function ChatPopover() {
   const classes = useStyles();
-
   const { user } = useContext(AuthContext);
-
-  const [loading, setLoading] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [pageNumber, setPageNumber] = useState(1);
-  const [hasMore, setHasMore] = useState(false);
-  const [searchParam] = useState("");
-  const [chats, dispatch] = useReducer(reducer, []);
-  const [invisible, setInvisible] = useState(true);
+  const socketManager = useContext(SocketContext);
   const { datetimeToClient } = useDate();
+
+  const [chats, dispatch] = useReducer(reducer, []);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [invisible, setInvisible] = useState(true);
   const [play] = useSound(notifySound);
   const soundAlertRef = useRef();
 
-  const socketManager = useContext(SocketContext);
-
   useEffect(() => {
     soundAlertRef.current = play;
-
-    if (!("Notification" in window)) {
-      console.log("This browser doesn't support notifications");
-    } else {
+    if (Notification.permission !== "granted") {
       Notification.requestPermission();
     }
   }, [play]);
 
   useEffect(() => {
-    dispatch({ type: "RESET" });
-    setPageNumber(1);
-  }, [searchParam]);
-
-  useEffect(() => {
-    setLoading(true);
-    const delayDebounceFn = setTimeout(() => {
-      fetchChats();
-    }, 500);
-    return () => clearTimeout(delayDebounceFn);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParam, pageNumber]);
-
-  useEffect(() => {
     const companyId = localStorage.getItem("companyId");
     const socket = socketManager.getSocket(companyId);
-    if (!socket) {
-      return () => {}; 
-    }
-    
-    socket.on(`company-${companyId}-chat`, (data) => {
-      if (data.action === "new-message") {
-        dispatch({ type: "CHANGE_CHAT", payload: data });
-        const userIds = data.newMessage.chat.users.map(userObj => userObj.userId);
 
-        if (userIds.includes(user.id) && data.newMessage.senderId !== user.id) {
-          soundAlertRef.current();
-        }
+    if (!socket) return;
+
+    socket.on(`company-${companyId}-chat`, (data) => {
+      if (data.action === "new-message" && data.newMessage.senderId !== user.id) {
+        dispatch({ type: "UPDATE_CHATS", payload: data.newMessage.chat });
+        soundAlertRef.current();
       }
       if (data.action === "update") {
-        dispatch({ type: "CHANGE_CHAT", payload: data });
+        dispatch({ type: "UPDATE_CHATS", payload: data.chat });
       }
     });
+
     return () => {
       socket.disconnect();
     };
   }, [socketManager, user.id]);
 
   useEffect(() => {
-    let unreadsCount = 0;
-    if (chats.length > 0) {
-      for (let chat of chats) {
-        for (let chatUser of chat.users) {
-          if (chatUser.userId === user.id) {
-            unreadsCount += chatUser.unreads;
-          }
-        }
-      }
-    }
-    if (unreadsCount > 0) {
-      setInvisible(false);
-    } else {
-      setInvisible(true);
-    }
+    const unreads = chats.reduce((count, chat) => {
+      const chatUser = chat.users.find((u) => u.userId === user.id);
+      return count + (chatUser?.unreads || 0);
+    }, 0);
+    setInvisible(unreads === 0);
   }, [chats, user.id]);
 
   const fetchChats = async () => {
     try {
-      const { data } = await api.get("/chats/", {
-        params: { searchParam, pageNumber },
-      });
+      const { data } = await api.get("/chats/");
       dispatch({ type: "LOAD_CHATS", payload: data.records });
-      setHasMore(data.hasMore);
-      setLoading(false);
     } catch (err) {
       toastError(err);
-    }
-  };
-
-  const loadMore = () => {
-    setPageNumber((prevState) => prevState + 1);
-  };
-
-  const handleScroll = (e) => {
-    if (!hasMore || loading) return;
-    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    if (scrollHeight - (scrollTop + 100) < clientHeight) {
-      loadMore();
     }
   };
 
@@ -226,7 +137,7 @@ export default function ChatPopover() {
       <IconButton
         aria-describedby={id}
         variant="contained"
-        color={invisible ? "default" : "inherit"}
+        color="inherit"
         onClick={handleClick}
         style={{ color: "white" }}
       >
@@ -250,40 +161,33 @@ export default function ChatPopover() {
       >
         <Paper
           variant="outlined"
-          onScroll={handleScroll}
           className={classes.mainPaper}
+          onScroll={(e) => {
+            const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+            if (scrollHeight - (scrollTop + clientHeight) < 100) {
+              fetchChats();
+            }
+          }}
         >
-          <List
-            component="nav"
-            aria-label="main mailbox folders"
-            style={{ minWidth: 300 }}
-          >
-            {isArray(chats) &&
-              chats.map((item, key) => (
-                <ListItem
-                  key={key}
-                  style={{
-                    background: key % 2 === 0 ? "#ededed" : "white",
-                    border: "1px solid #eee",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => goToMessages(item)}
-                  button
-                >
-                  <ListItemText
-                    primary={item.lastMessage}
-                    secondary={
-                      <>
-                        <Typography component="span" style={{ fontSize: 12 }}>
-                          {datetimeToClient(item.updatedAt)}
-                        </Typography>
-                        <span style={{ marginTop: 5, display: "block" }}></span>
-                      </>
-                    }
-                  />
-                </ListItem>
-              ))}
-            {isArray(chats) && chats.length === 0 && (
+          <List component="nav" style={{ minWidth: 300 }}>
+            {chats.map((chat) => (
+              <ListItem
+                key={chat.id}
+                style={{ backgroundColor: chat.unread ? "#f0f0f0" : "white", cursor: "pointer" }}
+                onClick={() => goToMessages(chat)}
+                button
+              >
+                <ListItemText
+                  primary={chat.lastMessage}
+                  secondary={
+                    <Typography component="span" style={{ fontSize: 12 }}>
+                      {datetimeToClient(chat.updatedAt)}
+                    </Typography>
+                  }
+                />
+              </ListItem>
+            ))}
+            {!chats.length && (
               <ListItemText primary={i18n.t("mainDrawer.appBar.notRegister")} />
             )}
           </List>
