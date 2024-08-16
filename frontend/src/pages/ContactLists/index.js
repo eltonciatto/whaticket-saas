@@ -1,82 +1,57 @@
-import React, { useState, useEffect, useReducer, useContext } from "react";
+import React, { useState, useEffect, useReducer, useContext, useCallback } from "react";
 import { toast } from "react-toastify";
-
 import { useHistory } from "react-router-dom";
-
-import { makeStyles } from "@material-ui/core/styles";
-import Paper from "@material-ui/core/Paper";
-import Button from "@material-ui/core/Button";
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableHead from "@material-ui/core/TableHead";
-import TableRow from "@material-ui/core/TableRow";
-import IconButton from "@material-ui/core/IconButton";
-import SearchIcon from "@material-ui/icons/Search";
-import TextField from "@material-ui/core/TextField";
-import InputAdornment from "@material-ui/core/InputAdornment";
-
-import DeleteOutlineIcon from "@material-ui/icons/DeleteOutline";
-import EditIcon from "@material-ui/icons/Edit";
-import PeopleIcon from "@material-ui/icons/People";
-import DownloadIcon from "@material-ui/icons/GetApp";
+import {
+  makeStyles,
+  Paper,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  IconButton,
+  TextField,
+  InputAdornment,
+  Grid
+} from "@material-ui/core";
+import {
+  Search as SearchIcon,
+  DeleteOutline as DeleteOutlineIcon,
+  Edit as EditIcon,
+  People as PeopleIcon,
+  GetApp as DownloadIcon
+} from "@material-ui/icons";
 
 import MainContainer from "../../components/MainContainer";
 import MainHeader from "../../components/MainHeader";
 import Title from "../../components/Title";
-
 import api from "../../services/api";
 import { i18n } from "../../translate/i18n";
 import TableRowSkeleton from "../../components/TableRowSkeleton";
 import ContactListDialog from "../../components/ContactListDialog";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import toastError from "../../errors/toastError";
-import { Grid } from "@material-ui/core";
-
 import planilhaExemplo from "../../assets/planilha.xlsx";
 import { SocketContext } from "../../context/Socket/SocketContext";
 
 const reducer = (state, action) => {
-  if (action.type === "LOAD_CONTACTLISTS") {
-    const contactLists = action.payload;
-    const newContactLists = [];
-
-    contactLists.forEach((contactList) => {
-      const contactListIndex = state.findIndex((u) => u.id === contactList.id);
-      if (contactListIndex !== -1) {
-        state[contactListIndex] = contactList;
-      } else {
-        newContactLists.push(contactList);
-      }
-    });
-
-    return [...state, ...newContactLists];
-  }
-
-  if (action.type === "UPDATE_CONTACTLIST") {
-    const contactList = action.payload;
-    const contactListIndex = state.findIndex((u) => u.id === contactList.id);
-
-    if (contactListIndex !== -1) {
-      state[contactListIndex] = contactList;
-      return [...state];
-    } else {
-      return [contactList, ...state];
-    }
-  }
-
-  if (action.type === "DELETE_CONTACTLIST") {
-    const contactListId = action.payload;
-
-    const contactListIndex = state.findIndex((u) => u.id === contactListId);
-    if (contactListIndex !== -1) {
-      state.splice(contactListIndex, 1);
-    }
-    return [...state];
-  }
-
-  if (action.type === "RESET") {
-    return [];
+  switch (action.type) {
+    case "LOAD_CONTACTLISTS":
+      const newContactLists = action.payload.filter(
+        (contactList) => !state.some((cl) => cl.id === contactList.id)
+      );
+      return [...state, ...newContactLists];
+    case "UPDATE_CONTACTLIST":
+      return state.map((contactList) =>
+        contactList.id === action.payload.id ? action.payload : contactList
+      );
+    case "DELETE_CONTACTLIST":
+      return state.filter((contactList) => contactList.id !== action.payload);
+    case "RESET":
+      return [];
+    default:
+      return state;
   }
 };
 
@@ -92,17 +67,15 @@ const useStyles = makeStyles((theme) => ({
 const ContactLists = () => {
   const classes = useStyles();
   const history = useHistory();
-
   const [loading, setLoading] = useState(false);
   const [pageNumber, setPageNumber] = useState(1);
   const [hasMore, setHasMore] = useState(false);
-  const [selectedContactList, setSelectedContactList] = useState(null);
-  const [deletingContactList, setDeletingContactList] = useState(null);
-  const [contactListModalOpen, setContactListModalOpen] = useState(false);
-  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [searchParam, setSearchParam] = useState("");
   const [contactLists, dispatch] = useReducer(reducer, []);
-
+  const [contactListModalOpen, setContactListModalOpen] = useState(false);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [selectedContactList, setSelectedContactList] = useState(null);
+  const [deletingContactList, setDeletingContactList] = useState(null);
   const socketManager = useContext(SocketContext);
 
   useEffect(() => {
@@ -111,22 +84,22 @@ const ContactLists = () => {
   }, [searchParam]);
 
   useEffect(() => {
-    setLoading(true);
-    const delayDebounceFn = setTimeout(() => {
-      const fetchContactLists = async () => {
-        try {
-          const { data } = await api.get("/contact-lists/", {
-            params: { searchParam, pageNumber },
-          });
-          dispatch({ type: "LOAD_CONTACTLISTS", payload: data.records });
-          setHasMore(data.hasMore);
-          setLoading(false);
-        } catch (err) {
-          toastError(err);
-        }
-      };
-      fetchContactLists();
-    }, 500);
+    const fetchContactLists = async () => {
+      setLoading(true);
+      try {
+        const { data } = await api.get("/contact-lists/", {
+          params: { searchParam, pageNumber },
+        });
+        dispatch({ type: "LOAD_CONTACTLISTS", payload: data.records });
+        setHasMore(data.hasMore);
+      } catch (err) {
+        toastError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const delayDebounceFn = setTimeout(fetchContactLists, 500);
     return () => clearTimeout(delayDebounceFn);
   }, [searchParam, pageNumber]);
 
@@ -134,34 +107,36 @@ const ContactLists = () => {
     const companyId = localStorage.getItem("companyId");
     const socket = socketManager.getSocket(companyId);
 
-    socket.on(`company-${companyId}-ContactList`, (data) => {
-      if (data.action === "update" || data.action === "create") {
-        dispatch({ type: "UPDATE_CONTACTLIST", payload: data.record });
+    const handleSocketData = (data) => {
+      switch (data.action) {
+        case "update":
+        case "create":
+          dispatch({ type: "UPDATE_CONTACTLIST", payload: data.record });
+          break;
+        case "delete":
+          dispatch({ type: "DELETE_CONTACTLIST", payload: +data.id });
+          break;
+        default:
+          break;
       }
-
-      if (data.action === "delete") {
-        dispatch({ type: "DELETE_CONTACTLIST", payload: +data.id });
-      }
-    });
-
-    return () => {
-      socket.disconnect();
     };
+
+    socket.on(`company-${companyId}-ContactList`, handleSocketData);
+
+    return () => socket.disconnect();
   }, [socketManager]);
 
-  const handleOpenContactListModal = () => {
+  const handleSearch = (event) => setSearchParam(event.target.value.toLowerCase());
+
+  const handleOpenContactListModal = useCallback(() => {
     setSelectedContactList(null);
     setContactListModalOpen(true);
-  };
+  }, []);
 
-  const handleCloseContactListModal = () => {
+  const handleCloseContactListModal = useCallback(() => {
     setSelectedContactList(null);
     setContactListModalOpen(false);
-  };
-
-  const handleSearch = (event) => {
-    setSearchParam(event.target.value.toLowerCase());
-  };
+  }, []);
 
   const handleEditContactList = (contactList) => {
     setSelectedContactList(contactList);
@@ -174,27 +149,22 @@ const ContactLists = () => {
       toast.success(i18n.t("contactLists.toasts.deleted"));
     } catch (err) {
       toastError(err);
+    } finally {
+      setDeletingContactList(null);
+      setSearchParam("");
+      setPageNumber(1);
     }
-    setDeletingContactList(null);
-    setSearchParam("");
-    setPageNumber(1);
   };
 
-  const loadMore = () => {
-    setPageNumber((prevState) => prevState + 1);
-  };
+  const loadMore = () => setPageNumber((prev) => prev + 1);
 
   const handleScroll = (e) => {
     if (!hasMore || loading) return;
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    if (scrollHeight - (scrollTop + 100) < clientHeight) {
-      loadMore();
-    }
+    if (scrollHeight - (scrollTop + 100) < clientHeight) loadMore();
   };
 
-  const goToContacts = (id) => {
-    history.push(`/contact-lists/${id}/contacts`);
-  };
+  const goToContacts = (id) => history.push(`/contact-lists/${id}/contacts`);
 
   return (
     <MainContainer>
@@ -206,7 +176,7 @@ const ContactLists = () => {
           }?`
         }
         open={confirmModalOpen}
-        onClose={setConfirmModalOpen}
+        onClose={() => setConfirmModalOpen(false)}
         onConfirm={() => handleDeleteContactList(deletingContactList.id)}
       >
         {i18n.t("contactLists.confirmationModal.deleteMessage")}
@@ -214,21 +184,19 @@ const ContactLists = () => {
       <ContactListDialog
         open={contactListModalOpen}
         onClose={handleCloseContactListModal}
-        aria-labelledby="form-dialog-title"
-        contactListId={selectedContactList && selectedContactList.id}
+        contactListId={selectedContactList?.id}
       />
       <MainHeader>
-        <Grid style={{ width: "99.6%" }} container>
-          <Grid xs={12} sm={8} item>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={8}>
             <Title>{i18n.t("contactLists.title")}</Title>
           </Grid>
-          <Grid xs={12} sm={4} item>
-            <Grid spacing={2} container>
-              <Grid xs={7} sm={6} item>
+          <Grid item xs={12} sm={4}>
+            <Grid container spacing={2}>
+              <Grid item xs={7} sm={6}>
                 <TextField
                   fullWidth
                   placeholder={i18n.t("contacts.searchPlaceholder")}
-                  type="search"
                   value={searchParam}
                   onChange={handleSearch}
                   InputProps={{
@@ -240,7 +208,7 @@ const ContactLists = () => {
                   }}
                 />
               </Grid>
-              <Grid xs={5} sm={6} item>
+              <Grid item xs={5} sm={6}>
                 <Button
                   fullWidth
                   variant="contained"
@@ -254,68 +222,45 @@ const ContactLists = () => {
           </Grid>
         </Grid>
       </MainHeader>
-      <Paper
-        className={classes.mainPaper}
-        variant="outlined"
-        onScroll={handleScroll}
-      >
+      <Paper className={classes.mainPaper} variant="outlined" onScroll={handleScroll}>
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell align="center">
-                {i18n.t("contactLists.table.name")}
-              </TableCell>
-              <TableCell align="center">
-                {i18n.t("contactLists.table.contacts")}
-              </TableCell>
-              <TableCell align="center">
-                {i18n.t("contactLists.table.actions")}
-              </TableCell>
+              <TableCell align="center">{i18n.t("contactLists.table.name")}</TableCell>
+              <TableCell align="center">{i18n.t("contactLists.table.contacts")}</TableCell>
+              <TableCell align="center">{i18n.t("contactLists.table.actions")}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            <>
-              {contactLists.map((contactList) => (
-                <TableRow key={contactList.id}>
-                  <TableCell align="center">{contactList.name}</TableCell>
-                  <TableCell align="center">
-                    {contactList.contactsCount || 0}
-                  </TableCell>
-                  <TableCell align="center">
-                    <a href={planilhaExemplo} download="planilha.xlsx">
-                      <IconButton size="small" title="Baixar Planilha Exemplo">
-                        <DownloadIcon />
-                      </IconButton>
-                    </a>
-
-                    <IconButton
-                      size="small"
-                      onClick={() => goToContacts(contactList.id)}
-                    >
-                      <PeopleIcon />
+            {contactLists.map((contactList) => (
+              <TableRow key={contactList.id}>
+                <TableCell align="center">{contactList.name}</TableCell>
+                <TableCell align="center">{contactList.contactsCount || 0}</TableCell>
+                <TableCell align="center">
+                  <a href={planilhaExemplo} download="planilha.xlsx">
+                    <IconButton size="small" title="Baixar Planilha Exemplo">
+                      <DownloadIcon />
                     </IconButton>
-
-                    <IconButton
-                      size="small"
-                      onClick={() => handleEditContactList(contactList)}
-                    >
-                      <EditIcon />
-                    </IconButton>
-
-                    <IconButton
-                      size="small"
-                      onClick={(e) => {
-                        setConfirmModalOpen(true);
-                        setDeletingContactList(contactList);
-                      }}
-                    >
-                      <DeleteOutlineIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {loading && <TableRowSkeleton columns={3} />}
-            </>
+                  </a>
+                  <IconButton size="small" onClick={() => goToContacts(contactList.id)}>
+                    <PeopleIcon />
+                  </IconButton>
+                  <IconButton size="small" onClick={() => handleEditContactList(contactList)}>
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      setConfirmModalOpen(true);
+                      setDeletingContactList(contactList);
+                    }}
+                  >
+                    <DeleteOutlineIcon />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+            {loading && <TableRowSkeleton columns={3} />}
           </TableBody>
         </Table>
       </Paper>
