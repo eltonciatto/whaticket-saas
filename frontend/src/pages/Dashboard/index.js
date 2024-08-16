@@ -9,7 +9,7 @@ import Select from "@material-ui/core/Select";
 import TextField from "@material-ui/core/TextField";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import Typography from "@material-ui/core/Typography";
-import { Button, makeStyles } from "@material-ui/core";
+import { Button } from "@material-ui/core";
 import MobileFriendlyIcon from "@material-ui/icons/MobileFriendly";
 import StoreIcon from "@material-ui/icons/Store";
 import SpeedIcon from "@material-ui/icons/Speed";
@@ -21,8 +21,10 @@ import RecordVoiceOverIcon from "@material-ui/icons/RecordVoiceOver";
 import GroupAddIcon from "@material-ui/icons/GroupAdd";
 import HourglassEmptyIcon from "@material-ui/icons/HourglassEmpty";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
+import ForumIcon from "@material-ui/icons/Forum";
 import AccessAlarmIcon from "@material-ui/icons/AccessAlarm";
 import TimerIcon from "@material-ui/icons/Timer";
+import { makeStyles } from "@material-ui/core/styles";
 import { grey, blue } from "@material-ui/core/colors";
 import { toast } from "react-toastify";
 import Chart from "./Chart";
@@ -32,16 +34,37 @@ import TableAttendantsStatus from "../../components/Dashboard/TableAttendantsSta
 import { isArray, isEmpty } from "lodash";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import useDashboard from "../../hooks/useDashboard";
+import useTickets from "../../hooks/useTickets";
+import useUsers from "../../hooks/useUsers";
 import useContacts from "../../hooks/useContacts";
+import useMessages from "../../hooks/useMessages";
 import { ChatsUser } from "./ChartsUser";
+import Filters from "./Filters";
 import moment from "moment";
 import { ChartsDate } from "./ChartsDate";
 
-// Função para criar estilos globais
 const useStyles = makeStyles((theme) => ({
   container: {
     paddingTop: theme.spacing(4),
     paddingBottom: theme.spacing(4),
+  },
+  fixedHeightPaper: {
+    padding: theme.spacing(2),
+    display: "flex",
+    flexDirection: "column",
+    overflowY: "auto",
+  },
+  card: {
+    padding: theme.spacing(2),
+    display: "flex",
+    overflow: "auto",
+    flexDirection: "column",
+    height: "100%",
+    backgroundColor: "#012489",
+    color: "#eee",
+  },
+  alignRight: {
+    textAlign: "right",
   },
   fullWidth: {
     width: "100%",
@@ -50,34 +73,13 @@ const useStyles = makeStyles((theme) => ({
     width: "100%",
     textAlign: "left",
   },
-  alignRight: {
-    textAlign: "right",
-  },
-  fixedHeightPaper2: {
-    padding: theme.spacing(2),
+  responsiveGridItem: {
     display: "flex",
-    overflow: "auto",
-    flexDirection: "column",
   },
 }));
 
-// Função para criar estilos dinamicamente para os cartões
-const useCardStyles = (backgroundColor) =>
-  makeStyles((theme) => ({
-    card: {
-      padding: theme.spacing(2),
-      display: "flex",
-      overflow: "auto",
-      flexDirection: "column",
-      height: "100%",
-      backgroundColor: backgroundColor || "#012489",
-      color: "#eee",
-    },
-  }));
-
 const Dashboard = () => {
-  const classes = useStyles(); // Agora o uso de `useStyles` está correto
-  const classesCard = useCardStyles("#012489")();
+  const classes = useStyles();
   const [counters, setCounters] = useState({});
   const [attendants, setAttendants] = useState([]);
   const [period, setPeriod] = useState(0);
@@ -220,8 +222,8 @@ const Dashboard = () => {
   return (
     <div>
       <Container maxWidth="lg" className={classes.container}>
-        <Grid container spacing={3} justifyContent="flex-end">
-          {/* Código para renderizar os filtros e os cartões */}
+        <Grid container spacing={3}>
+          {/* Filtros */}
           <Grid item xs={12} sm={6} md={4}>
             <FormControl className={classes.selectContainer}>
               <InputLabel id="period-selector-label">Tipo de Filtro</InputLabel>
@@ -249,8 +251,8 @@ const Dashboard = () => {
           </Grid>
 
           {user.super && (
-            <Grid item xs={12} sm={6} md={4}>
-              <Paper className={classesCard.card} elevation={4}>
+            <Grid item xs={12} sm={6} md={4} className={classes.responsiveGridItem}>
+              <Paper className={classes.card} elevation={4}>
                 <Grid container spacing={3}>
                   <Grid item xs={8}>
                     <Typography component="h3" variant="h6" paragraph>
@@ -262,7 +264,7 @@ const Dashboard = () => {
                       </Typography>
                     </Grid>
                   </Grid>
-                  <Grid item xs={2}>
+                  <Grid item xs={4}>
                     <MobileFriendlyIcon style={{ fontSize: 100, color: "#fff" }} />
                   </Grid>
                 </Grid>
@@ -271,8 +273,8 @@ const Dashboard = () => {
           )}
 
           {user.super && (
-            <Grid item xs={12} sm={6} md={4}>
-              <Paper className={classesCard.card} elevation={4}>
+            <Grid item xs={12} sm={6} md={4} className={classes.responsiveGridItem}>
+              <Paper className={classes.card} elevation={4}>
                 <Grid container spacing={3}>
                   <Grid item xs={8}>
                     <Typography component="h3" variant="h6" paragraph>
@@ -284,7 +286,7 @@ const Dashboard = () => {
                       </Typography>
                     </Grid>
                   </Grid>
-                  <Grid item xs={2}>
+                  <Grid item xs={4}>
                     <StoreIcon style={{ fontSize: 100, color: "#fff" }} />
                   </Grid>
                 </Grid>
@@ -293,8 +295,8 @@ const Dashboard = () => {
           )}
 
           {/* Em Atendimento */}
-          <Grid item xs={12} sm={6} md={4}>
-            <Paper className={classesCard.card} elevation={4}>
+          <Grid item xs={12} sm={6} md={4} className={classes.responsiveGridItem}>
+            <Paper className={classes.card} elevation={4}>
               <Grid container spacing={3}>
                 <Grid item xs={8}>
                   <Typography component="h3" variant="h6" paragraph>
@@ -306,7 +308,7 @@ const Dashboard = () => {
                     </Typography>
                   </Grid>
                 </Grid>
-                <Grid item xs={2}>
+                <Grid item xs={4}>
                   <CallIcon style={{ fontSize: 100, color: "#fff" }} />
                 </Grid>
               </Grid>
@@ -314,8 +316,8 @@ const Dashboard = () => {
           </Grid>
 
           {/* Aguardando */}
-          <Grid item xs={12} sm={6} md={4}>
-            <Paper className={classesCard.card} elevation={6}>
+          <Grid item xs={12} sm={6} md={4} className={classes.responsiveGridItem}>
+            <Paper className={classes.card} elevation={6}>
               <Grid container spacing={3}>
                 <Grid item xs={8}>
                   <Typography component="h3" variant="h6" paragraph>
@@ -335,8 +337,8 @@ const Dashboard = () => {
           </Grid>
 
           {/* Finalizados */}
-          <Grid item xs={12} sm={6} md={4}>
-            <Paper className={classesCard.card} elevation={6}>
+          <Grid item xs={12} sm={6} md={4} className={classes.responsiveGridItem}>
+            <Paper className={classes.card} elevation={6}>
               <Grid container spacing={3}>
                 <Grid item xs={8}>
                   <Typography component="h3" variant="h6" paragraph>
@@ -356,8 +358,8 @@ const Dashboard = () => {
           </Grid>
 
           {/* Novos Contatos */}
-          <Grid item xs={12} sm={6} md={4}>
-            <Paper className={classesCard.card} elevation={6}>
+          <Grid item xs={12} sm={6} md={4} className={classes.responsiveGridItem}>
+            <Paper className={classes.card} elevation={6}>
               <Grid container spacing={3}>
                 <Grid item xs={8}>
                   <Typography component="h3" variant="h6" paragraph>
@@ -377,8 +379,8 @@ const Dashboard = () => {
           </Grid>
 
           {/* Tempo Médio de Atendimento */}
-          <Grid item xs={12} sm={6} md={4}>
-            <Paper className={classesCard.card} elevation={6}>
+          <Grid item xs={12} sm={6} md={4} className={classes.responsiveGridItem}>
+            <Paper className={classes.card} elevation={6}>
               <Grid container spacing={3}>
                 <Grid item xs={8}>
                   <Typography component="h3" variant="h6" paragraph>
@@ -398,8 +400,8 @@ const Dashboard = () => {
           </Grid>
 
           {/* Tempo Médio de Espera */}
-          <Grid item xs={12} sm={6} md={4}>
-            <Paper className={classesCard.card} elevation={6}>
+          <Grid item xs={12} sm={6} md={4} className={classes.responsiveGridItem}>
+            <Paper className={classes.card} elevation={6}>
               <Grid container spacing={3}>
                 <Grid item xs={8}>
                   <Typography component="h3" variant="h6" paragraph>
@@ -430,14 +432,14 @@ const Dashboard = () => {
 
           {/* Total de Atendimentos por Usuário */}
           <Grid item xs={12}>
-            <Paper className={classes.fixedHeightPaper2}>
+            <Paper className={classes.fixedHeightPaper}>
               <ChatsUser />
             </Paper>
           </Grid>
 
           {/* Total de Atendimentos */}
           <Grid item xs={12}>
-            <Paper className={classes.fixedHeightPaper2}>
+            <Paper className={classes.fixedHeightPaper}>
               <ChartsDate />
             </Paper>
           </Grid>
