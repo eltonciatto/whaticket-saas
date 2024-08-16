@@ -14,56 +14,48 @@ import SendIcon from "@material-ui/icons/Send";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import { useDate } from "../../hooks/useDate";
 import api from "../../services/api";
-import { green } from "@material-ui/core/colors";
 
 const useStyles = makeStyles((theme) => ({
   mainContainer: {
     display: "flex",
     flexDirection: "column",
-    position: "relative",
     flex: 1,
     overflow: "hidden",
     borderRadius: 0,
     height: "100%",
-    borderLeft: "1px solid rgba(0, 0, 0, 0.12)",
+    borderLeft: `1px solid ${theme.palette.divider}`,
   },
   messageList: {
-    position: "relative",
     overflowY: "auto",
     height: "100%",
     ...theme.scrollbarStyles,
-    backgroundColor: theme.palette.chatlist, //DARK MODE PLW DESIGN//
+    backgroundColor: theme.palette.background.default,
+    padding: theme.spacing(2),
   },
   inputArea: {
-    position: "relative",
-    height: "auto",
-  },
-  input: {
-    padding: "20px",
-  },
-  buttonSend: {
-    margin: theme.spacing(1),
+    padding: theme.spacing(1),
+    borderTop: `1px solid ${theme.palette.divider}`,
   },
   boxLeft: {
-    padding: "10px 10px 5px",
-    margin: "10px",
-    position: "relative",
-    backgroundColor: "blue",
-    maxWidth: 300,
+    padding: theme.spacing(1),
+    margin: theme.spacing(1),
+    backgroundColor: theme.palette.action.hover,
+    maxWidth: "60%",
     borderRadius: 10,
     borderBottomLeftRadius: 0,
-    border: "1px solid rgba(0, 0, 0, 0.12)",
   },
   boxRight: {
-    padding: "10px 10px 5px",
-    margin: "10px 10px 10px auto",
-    position: "relative",
-    backgroundColor: "blue", //DARK MODE PLW DESIGN//
-    textAlign: "right",
-    maxWidth: 300,
+    padding: theme.spacing(1),
+    margin: theme.spacing(1),
+    marginLeft: "auto",
+    backgroundColor: theme.palette.primary.light,
+    maxWidth: "60%",
     borderRadius: 10,
     borderBottomRightRadius: 0,
-    border: "1px solid rgba(0, 0, 0, 0.12)",
+    textAlign: "right",
+  },
+  senderName: {
+    fontWeight: "bold",
   },
 }));
 
@@ -79,39 +71,50 @@ export default function ChatMessages({
   const classes = useStyles();
   const { user } = useContext(AuthContext);
   const { datetimeToClient } = useDate();
-  const baseRef = useRef();
+  const messageEndRef = useRef();
 
   const [contentMessage, setContentMessage] = useState("");
 
   const scrollToBottom = () => {
-    if (baseRef.current) {
-      baseRef.current.scrollIntoView({});
+    if (messageEndRef.current) {
+      messageEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  };
-
-  const unreadMessages = (chat) => {
-    if (chat !== undefined) {
-      const currentUser = chat.users.find((u) => u.userId === user.id);
-      return currentUser.unreads > 0;
-    }
-    return 0;
   };
 
   useEffect(() => {
-    if (unreadMessages(chat) > 0) {
-      try {
-        api.post(`/chats/${chat.id}/read`, { userId: user.id });
-      } catch (err) {}
+    if (chat) {
+      if (unreadMessages(chat) > 0) {
+        markAsRead(chat);
+      }
+      scrollToBottomRef.current = scrollToBottom;
     }
-    scrollToBottomRef.current = scrollToBottom;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [chat]);
+
+  const unreadMessages = (chat) => {
+    const currentUser = chat?.users?.find((u) => u.userId === user.id);
+    return currentUser?.unreads || 0;
+  };
+
+  const markAsRead = async (chat) => {
+    try {
+      await api.post(`/chats/${chat.id}/read`, { userId: user.id });
+    } catch (err) {
+      console.error("Failed to mark messages as read", err);
+    }
+  };
 
   const handleScroll = (e) => {
-    const { scrollTop } = e.currentTarget;
     if (!pageInfo.hasMore || loading) return;
-    if (scrollTop < 600) {
+    if (e.currentTarget.scrollTop < 600) {
       handleLoadMore();
+    }
+  };
+
+  const handleSendMessageClick = () => {
+    if (contentMessage.trim()) {
+      handleSendMessage(contentMessage);
+      setContentMessage("");
     }
   };
 
@@ -119,34 +122,23 @@ export default function ChatMessages({
     <Paper className={classes.mainContainer}>
       <div onScroll={handleScroll} className={classes.messageList}>
         {Array.isArray(messages) &&
-          messages.map((item, key) => {
-            if (item.senderId === user.id) {
-              return (
-                <Box key={key} className={classes.boxRight}>
-                  <Typography variant="subtitle2">
-                    {item.sender.name}
-                  </Typography>
-                  {item.message}
-                  <Typography variant="caption" display="block">
-                    {datetimeToClient(item.createdAt)}
-                  </Typography>
-                </Box>
-              );
-            } else {
-              return (
-                <Box key={key} className={classes.boxLeft}>
-                  <Typography variant="subtitle2">
-                    {item.sender.name}
-                  </Typography>
-                  {item.message}
-                  <Typography variant="caption" display="block">
-                    {datetimeToClient(item.createdAt)}
-                  </Typography>
-                </Box>
-              );
-            }
-          })}
-        <div ref={baseRef}></div>
+          messages.map((item, key) => (
+            <Box
+              key={key}
+              className={
+                item.senderId === user.id ? classes.boxRight : classes.boxLeft
+              }
+            >
+              <Typography variant="subtitle2" className={classes.senderName}>
+                {item.sender.name}
+              </Typography>
+              <Typography variant="body2">{item.message}</Typography>
+              <Typography variant="caption" display="block">
+                {datetimeToClient(item.createdAt)}
+              </Typography>
+            </Box>
+          ))}
+        <div ref={messageEndRef}></div>
       </div>
       <div className={classes.inputArea}>
         <FormControl variant="outlined" fullWidth>
@@ -154,24 +146,15 @@ export default function ChatMessages({
             multiline
             value={contentMessage}
             onKeyUp={(e) => {
-              if (e.key === "Enter" && contentMessage.trim() !== "") {
-                handleSendMessage(contentMessage);
-                setContentMessage("");
+              if (e.key === "Enter" && !e.shiftKey && contentMessage.trim()) {
+                handleSendMessageClick();
               }
             }}
             onChange={(e) => setContentMessage(e.target.value)}
             className={classes.input}
             endAdornment={
               <InputAdornment position="end">
-                <IconButton
-                  onClick={() => {
-                    if (contentMessage.trim() !== "") {
-                      handleSendMessage(contentMessage);
-                      setContentMessage("");
-                    }
-                  }}
-                  className={classes.buttonSend}
-                >
+                <IconButton onClick={handleSendMessageClick}>
                   <SendIcon />
                 </IconButton>
               </InputAdornment>
