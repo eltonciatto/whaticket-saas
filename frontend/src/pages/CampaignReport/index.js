@@ -41,7 +41,6 @@ const useStyles = makeStyles((theme) => ({
 
 const CampaignReport = () => {
   const classes = useStyles();
-
   const { campaignId } = useParams();
 
   const [campaign, setCampaign] = useState({});
@@ -54,13 +53,11 @@ const CampaignReport = () => {
   const mounted = useRef(true);
 
   const { datetimeToClient } = useDate();
-
   const socketManager = useContext(SocketContext);
 
   useEffect(() => {
-    if (mounted.current) {
-      findCampaign();
-    }
+    mounted.current = true;
+    findCampaign();
 
     return () => {
       mounted.current = false;
@@ -69,47 +66,37 @@ const CampaignReport = () => {
   }, []);
 
   useEffect(() => {
-    if (mounted.current && has(campaign, "shipping")) {
-      if (has(campaign, "contactList")) {
-        const contactList = get(campaign, "contactList");
-        const valids = contactList.contacts.filter((c) => c.isWhatsappValid);
-        setValidContacts(valids.length);
-      }
+    if (has(campaign, "shipping") && has(campaign, "contactList")) {
+      const contactList = get(campaign, "contactList");
+      const validContacts = contactList.contacts.filter((c) => c.isWhatsappValid).length;
+      setValidContacts(validContacts);
 
-      if (has(campaign, "shipping")) {
-        const contacts = get(campaign, "shipping");
-        const delivered = contacts.filter((c) => !isNull(c.deliveredAt));
-        const confirmationRequested = contacts.filter(
-          (c) => !isNull(c.confirmationRequestedAt)
-        );
-        const confirmed = contacts.filter(
-          (c) => !isNull(c.deliveredAt) && !isNull(c.confirmationRequestedAt)
-        );
-        setDelivered(delivered.length);
-        setConfirmationRequested(confirmationRequested.length);
-        setConfirmed(confirmed.length);
-        setDelivered(delivered.length);
-      }
+      const contacts = get(campaign, "shipping");
+      const deliveredContacts = contacts.filter((c) => !isNull(c.deliveredAt)).length;
+      const confirmationRequested = contacts.filter(
+        (c) => !isNull(c.confirmationRequestedAt)
+      ).length;
+      const confirmed = contacts.filter(
+        (c) => !isNull(c.deliveredAt) && !isNull(c.confirmationRequestedAt)
+      ).length;
+
+      setDelivered(deliveredContacts);
+      setConfirmationRequested(confirmationRequested);
+      setConfirmed(confirmed);
+      setPercent((deliveredContacts / validContacts) * 100);
     }
   }, [campaign]);
-
-  useEffect(() => {
-    setPercent((delivered / validContacts) * 100);
-  }, [delivered, validContacts]);
 
   useEffect(() => {
     const companyId = localStorage.getItem("companyId");
     const socket = socketManager.getSocket(companyId);
 
     socket.on(`company-${companyId}-campaign`, (data) => {
-     
       if (data.record.id === +campaignId) {
         setCampaign(data.record);
 
         if (data.record.status === "FINALIZADA") {
-          setTimeout(() => {
-            findCampaign();
-          }, 5000);
+          setTimeout(findCampaign, 5000);
         }
       }
     });
@@ -121,27 +108,26 @@ const CampaignReport = () => {
   }, [campaignId, socketManager]);
 
   const findCampaign = async () => {
-    setLoading(true);
-    const { data } = await api.get(`/campaigns/${campaignId}`);
-    setCampaign(data);
-    setLoading(false);
+    try {
+      setLoading(true);
+      const { data } = await api.get(`/campaigns/${campaignId}`);
+      setCampaign(data);
+    } catch (error) {
+      console.error("Error fetching campaign data:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const formatStatus = (val) => {
-    switch (val) {
-      case "INATIVA":
-        return "Inativa";
-      case "PROGRAMADA":
-        return "Programada";
-      case "EM_ANDAMENTO":
-        return "Em Andamento";
-      case "CANCELADA":
-        return "Cancelada";
-      case "FINALIZADA":
-        return "Finalizada";
-      default:
-        return val;
-    }
+  const formatStatus = (status) => {
+    const statusMap = {
+      INATIVA: "Inativa",
+      PROGRAMADA: "Programada",
+      EM_ANDAMENTO: "Em Andamento",
+      CANCELADA: "Cancelada",
+      FINALIZADA: "Finalizada",
+    };
+    return statusMap[status] || status;
   };
 
   return (
@@ -157,15 +143,15 @@ const CampaignReport = () => {
         <Typography variant="h6" component="h2">
           Status: {formatStatus(campaign.status)} {delivered} de {validContacts}
         </Typography>
-        <Grid spacing={2} container>
-          <Grid xs={12} item>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
             <LinearProgress
               variant="determinate"
               style={{ height: 15, borderRadius: 3, margin: "20px 0" }}
               value={percent}
             />
           </Grid>
-          <Grid xs={12} md={4} item>
+          <Grid item xs={12} md={4}>
             <CardCounter
               icon={<GroupIcon fontSize="inherit" />}
               title="Contatos Válidos"
@@ -175,7 +161,7 @@ const CampaignReport = () => {
           </Grid>
           {campaign.confirmation && (
             <>
-              <Grid xs={12} md={4} item>
+              <Grid item xs={12} md={4}>
                 <CardCounter
                   icon={<DoneIcon fontSize="inherit" />}
                   title="Confirmações Solicitadas"
@@ -183,7 +169,7 @@ const CampaignReport = () => {
                   loading={loading}
                 />
               </Grid>
-              <Grid xs={12} md={4} item>
+              <Grid item xs={12} md={4}>
                 <CardCounter
                   icon={<DoneAllIcon fontSize="inherit" />}
                   title="Confirmações"
@@ -193,7 +179,7 @@ const CampaignReport = () => {
               </Grid>
             </>
           )}
-          <Grid xs={12} md={4} item>
+          <Grid item xs={12} md={4}>
             <CardCounter
               icon={<CheckCircleIcon fontSize="inherit" />}
               title="Entregues"
@@ -202,7 +188,7 @@ const CampaignReport = () => {
             />
           </Grid>
           {campaign.whatsappId && (
-            <Grid xs={12} md={4} item>
+            <Grid item xs={12} md={4}>
               <CardCounter
                 icon={<WhatsAppIcon fontSize="inherit" />}
                 title="Conexão"
@@ -212,7 +198,7 @@ const CampaignReport = () => {
             </Grid>
           )}
           {campaign.contactListId && (
-            <Grid xs={12} md={4} item>
+            <Grid item xs={12} md={4}>
               <CardCounter
                 icon={<ListAltIcon fontSize="inherit" />}
                 title="Lista de Contatos"
@@ -221,7 +207,7 @@ const CampaignReport = () => {
               />
             </Grid>
           )}
-          <Grid xs={12} md={4} item>
+          <Grid item xs={12} md={4}>
             <CardCounter
               icon={<ScheduleIcon fontSize="inherit" />}
               title="Agendamento"
@@ -229,7 +215,7 @@ const CampaignReport = () => {
               loading={loading}
             />
           </Grid>
-          <Grid xs={12} md={4} item>
+          <Grid item xs={12} md={4}>
             <CardCounter
               icon={<EventAvailableIcon fontSize="inherit" />}
               title="Conclusão"
