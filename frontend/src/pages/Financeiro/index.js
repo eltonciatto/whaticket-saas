@@ -20,6 +20,7 @@ import SubscriptionModal from "../../components/SubscriptionModal";
 import api from "../../services/api";
 import toastError from "../../errors/toastError";
 import TableRowSkeleton from "../../components/TableRowSkeleton";
+import MainHeaderButtonsWrapper from "../../components/MainHeaderButtonsWrapper"; // Importação adicionada
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -136,19 +137,21 @@ const Invoices = () => {
       />
       <MainHeader>
         <Title>Faturas</Title>
-        <TextField
-          placeholder="Pesquisar..."
-          type="search"
-          value={searchParam}
-          onChange={(e) => setSearchParam(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon style={{ color: "gray" }} />
-              </InputAdornment>
-            ),
-          }}
-        />
+        <MainHeaderButtonsWrapper>
+          <TextField
+            placeholder="Pesquisar..."
+            type="search"
+            value={searchParam}
+            onChange={(e) => setSearchParam(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon style={{ color: "gray" }} />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </MainHeaderButtonsWrapper>
       </MainHeader>
       <Paper className={classes.mainPaper} variant="outlined" onScroll={handleScroll}>
         <Table size="small">
