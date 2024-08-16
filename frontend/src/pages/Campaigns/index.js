@@ -1,8 +1,6 @@
 /* eslint-disable no-unused-vars */
-
 import React, { useContext, useEffect, useReducer, useState } from "react";
 import { toast } from "react-toastify";
-
 import { useHistory } from "react-router-dom";
 
 import Button from "@material-ui/core/Button";
@@ -17,7 +15,6 @@ import TableRow from "@material-ui/core/TableRow";
 import TextField from "@material-ui/core/TextField";
 import { makeStyles } from "@material-ui/core/styles";
 import SearchIcon from "@material-ui/icons/Search";
-
 import DeleteOutlineIcon from "@material-ui/icons/DeleteOutline";
 import DescriptionIcon from "@material-ui/icons/Description";
 import EditIcon from "@material-ui/icons/Edit";
@@ -40,48 +37,44 @@ import api from "../../services/api";
 import { i18n } from "../../translate/i18n";
 
 const reducer = (state, action) => {
-  if (action.type === "LOAD_CAMPAIGNS") {
-    const campaigns = action.payload;
-    const newCampaigns = [];
+  switch (action.type) {
+    case "LOAD_CAMPAIGNS":
+      const campaigns = action.payload;
+      const newCampaigns = [];
 
-    if (isArray(campaigns)) {
-      campaigns.forEach((campaign) => {
-        const campaignIndex = state.findIndex((u) => u.id === campaign.id);
-        if (campaignIndex !== -1) {
-          state[campaignIndex] = campaign;
-        } else {
-          newCampaigns.push(campaign);
-        }
-      });
-    }
+      if (isArray(campaigns)) {
+        campaigns.forEach((campaign) => {
+          const campaignIndex = state.findIndex((u) => u.id === campaign.id);
+          if (campaignIndex !== -1) {
+            state[campaignIndex] = campaign;
+          } else {
+            newCampaigns.push(campaign);
+          }
+        });
+      }
 
-    return [...state, ...newCampaigns];
-  }
+      return [...state, ...newCampaigns];
 
-  if (action.type === "UPDATE_CAMPAIGNS") {
-    const campaign = action.payload;
-    const campaignIndex = state.findIndex((u) => u.id === campaign.id);
+    case "UPDATE_CAMPAIGNS":
+      const updatedCampaign = action.payload;
+      const campaignIndex = state.findIndex((u) => u.id === updatedCampaign.id);
 
-    if (campaignIndex !== -1) {
-      state[campaignIndex] = campaign;
-      return [...state];
-    } else {
-      return [campaign, ...state];
-    }
-  }
+      if (campaignIndex !== -1) {
+        state[campaignIndex] = updatedCampaign;
+        return [...state];
+      } else {
+        return [updatedCampaign, ...state];
+      }
 
-  if (action.type === "DELETE_CAMPAIGN") {
-    const campaignId = action.payload;
+    case "DELETE_CAMPAIGN":
+      const campaignId = action.payload;
+      return state.filter((u) => u.id !== campaignId);
 
-    const campaignIndex = state.findIndex((u) => u.id === campaignId);
-    if (campaignIndex !== -1) {
-      state.splice(campaignIndex, 1);
-    }
-    return [...state];
-  }
+    case "RESET":
+      return [];
 
-  if (action.type === "RESET") {
-    return [];
+    default:
+      return state;
   }
 };
 
@@ -96,7 +89,6 @@ const useStyles = makeStyles((theme) => ({
 
 const Campaigns = () => {
   const classes = useStyles();
-
   const history = useHistory();
 
   const [loading, setLoading] = useState(false);
@@ -110,7 +102,6 @@ const Campaigns = () => {
   const [campaigns, dispatch] = useReducer(reducer, []);
 
   const { datetimeToClient } = useDate();
-
   const socketManager = useContext(SocketContext);
 
   useEffect(() => {
@@ -139,6 +130,7 @@ const Campaigns = () => {
         dispatch({ type: "DELETE_CAMPAIGN", payload: +data.id });
       }
     });
+
     return () => {
       socket.disconnect();
     };
@@ -327,9 +319,6 @@ const Campaigns = () => {
               <TableCell align="center">
                 {i18n.t("campaigns.table.completedAt")}
               </TableCell>
-              {/* <TableCell align="center">
-                {i18n.t("campaigns.table.confirmation")}
-              </TableCell> */}
               <TableCell align="center">
                 {i18n.t("campaigns.table.actions")}
               </TableCell>
@@ -363,9 +352,6 @@ const Campaigns = () => {
                       ? datetimeToClient(campaign.completedAt)
                       : "Não concluída"}
                   </TableCell>
-                  {/* <TableCell align="center">
-                    {campaign.confirmation ? "Habilitada" : "Desabilitada"}
-                  </TableCell> */}
                   <TableCell align="center">
                     {campaign.status === "EM_ANDAMENTO" && (
                       <IconButton
@@ -379,7 +365,7 @@ const Campaigns = () => {
                     {campaign.status === "CANCELADA" && (
                       <IconButton
                         onClick={() => restartCampaign(campaign)}
-                        title="Parar Campanha"
+                        title="Reiniciar Campanha"
                         size="small"
                       >
                         <PlayCircleOutlineIcon />
@@ -412,7 +398,7 @@ const Campaigns = () => {
                   </TableCell>
                 </TableRow>
               ))}
-              {loading && <TableRowSkeleton columns={8} />}
+              {loading && <TableRowSkeleton columns={7} />}
             </>
           </TableBody>
         </Table>
