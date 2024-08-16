@@ -11,19 +11,10 @@ import {
   Container,
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
-import { versionSystem, nomeEmpresa } from "../../../package.json";
 import { i18n } from "../../translate/i18n";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import "../../assets/background-animation.css";
 import logo from "../../assets/sendbot-logo4-500x.png";
-
-const Copyright = () => {
-  return (
-    <Typography variant="body2" color="textSecondary" align="center">
-      © Sendbot 2024 - Whaticket
-    </Typography>
-  );
-};
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -57,10 +48,9 @@ const useStyles = makeStyles((theme) => ({
     marginTop: theme.spacing(2),
   },
   logo: {
-    width: "80px", // Ajuste o tamanho da logo conforme necessário
+    width: "80px",
     position: "absolute",
-    top: "-40px", // Ajuste a posição da logo conforme necessário
-    borderRadius: "0%", // Deixar a logo redonda ou não
+    top: "-40px",
     padding: theme.spacing(1),
   },
   welcomeText: {
@@ -71,19 +61,34 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const Copyright = () => (
+  <Typography variant="body2" color="textSecondary" align="center">
+    © Sendbot 2024 - Whaticket
+  </Typography>
+);
+
 const Login = () => {
   const classes = useStyles();
-  const [user, setUser] = useState({ email: "", password: "" });
   const { handleLogin } = useContext(AuthContext);
+  const [user, setUser] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState(false);
 
-  const handleChangeInput = useCallback((e) => {
-    setUser({ ...user, [e.target.name]: e.target.value });
-  }, [user]);
+  const handleChangeInput = useCallback(
+    (e) => {
+      setUser((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    },
+    [setUser]
+  );
 
-  const handleSubmit = useCallback((e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    handleLogin(user);
-  }, [handleLogin, user]);
+    setLoading(true);
+    try {
+      await handleLogin(user);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className={`${classes.root} animatedBackground`}>
@@ -142,8 +147,9 @@ const Login = () => {
               variant="contained"
               color="primary"
               className={classes.submit}
+              disabled={loading}
             >
-              {i18n.t("login.buttons.submit")}
+              {loading ? "Carregando..." : i18n.t("login.buttons.submit")}
             </Button>
             <Button
               fullWidth
