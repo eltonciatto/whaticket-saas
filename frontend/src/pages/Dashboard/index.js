@@ -9,7 +9,7 @@ import Select from "@material-ui/core/Select";
 import TextField from "@material-ui/core/TextField";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import Typography from "@material-ui/core/Typography";
-import { Button } from "@material-ui/core";
+import { Button, makeStyles } from "@material-ui/core";
 import MobileFriendlyIcon from "@material-ui/icons/MobileFriendly";
 import StoreIcon from "@material-ui/icons/Store";
 import SpeedIcon from "@material-ui/icons/Speed";
@@ -21,10 +21,8 @@ import RecordVoiceOverIcon from "@material-ui/icons/RecordVoiceOver";
 import GroupAddIcon from "@material-ui/icons/GroupAdd";
 import HourglassEmptyIcon from "@material-ui/icons/HourglassEmpty";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
-import ForumIcon from "@material-ui/icons/Forum";
 import AccessAlarmIcon from "@material-ui/icons/AccessAlarm";
 import TimerIcon from "@material-ui/icons/Timer";
-import { makeStyles } from "@material-ui/core/styles";
 import { grey, blue } from "@material-ui/core/colors";
 import { toast } from "react-toastify";
 import Chart from "./Chart";
@@ -34,16 +32,36 @@ import TableAttendantsStatus from "../../components/Dashboard/TableAttendantsSta
 import { isArray, isEmpty } from "lodash";
 import { AuthContext } from "../../context/Auth/AuthContext";
 import useDashboard from "../../hooks/useDashboard";
-import useTickets from "../../hooks/useTickets";
-import useUsers from "../../hooks/useUsers";
 import useContacts from "../../hooks/useContacts";
-import useMessages from "../../hooks/useMessages";
 import { ChatsUser } from "./ChartsUser";
-import Filters from "./Filters";
 import moment from "moment";
 import { ChartsDate } from "./ChartsDate";
 
-// Função para criar estilos dinamicamente
+// Função para criar estilos globais
+const useStyles = makeStyles((theme) => ({
+  container: {
+    paddingTop: theme.spacing(4),
+    paddingBottom: theme.spacing(4),
+  },
+  fullWidth: {
+    width: "100%",
+  },
+  selectContainer: {
+    width: "100%",
+    textAlign: "left",
+  },
+  alignRight: {
+    textAlign: "right",
+  },
+  fixedHeightPaper2: {
+    padding: theme.spacing(2),
+    display: "flex",
+    overflow: "auto",
+    flexDirection: "column",
+  },
+}));
+
+// Função para criar estilos dinamicamente para os cartões
 const useCardStyles = (backgroundColor) =>
   makeStyles((theme) => ({
     card: {
@@ -58,7 +76,8 @@ const useCardStyles = (backgroundColor) =>
   }));
 
 const Dashboard = () => {
-  const classes = useStyles();
+  const classes = useStyles(); // Agora o uso de `useStyles` está correto
+  const classesCard = useCardStyles("#012489")();
   const [counters, setCounters] = useState({});
   const [attendants, setAttendants] = useState([]);
   const [period, setPeriod] = useState(0);
@@ -68,14 +87,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const { find } = useDashboard();
   const { user } = useContext(AuthContext);
-  const [showFilter, setShowFilter] = useState(false);
   const [queueTicket, setQueueTicket] = useState(false);
-
-  let newDate = new Date();
-  let date = newDate.getDate();
-  let month = newDate.getMonth() + 1;
-  let year = newDate.getFullYear();
-  let now = `${year}-${month < 10 ? `0${month}` : `${month}`}-${date < 10 ? `0${date}` : `${date}`}`;
 
   useEffect(() => {
     async function firstLoad() {
@@ -148,16 +160,6 @@ const Dashboard = () => {
       .format("HH[h] mm[m]");
   }
 
-  const GetUsers = () => {
-    let userOnline = 0;
-    attendants.forEach((user) => {
-      if (user.online === true) {
-        userOnline += 1;
-      }
-    });
-    return userOnline;
-  };
-
   const GetContacts = () => {
     const { count } = useContacts({});
     return count;
@@ -215,12 +217,11 @@ const Dashboard = () => {
     );
   };
 
-  const classesCard = useCardStyles("#012489")();
-
   return (
     <div>
       <Container maxWidth="lg" className={classes.container}>
         <Grid container spacing={3} justifyContent="flex-end">
+          {/* Código para renderizar os filtros e os cartões */}
           <Grid item xs={12} sm={6} md={4}>
             <FormControl className={classes.selectContainer}>
               <InputLabel id="period-selector-label">Tipo de Filtro</InputLabel>
