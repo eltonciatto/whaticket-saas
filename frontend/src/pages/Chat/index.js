@@ -1,7 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-
 import { useParams, useHistory } from "react-router-dom";
-
 import {
   Button,
   Dialog,
@@ -20,9 +18,7 @@ import ChatMessages from "./ChatMessages";
 import { UsersFilter } from "../../components/UsersFilter";
 import api from "../../services/api";
 import { SocketContext } from "../../context/Socket/SocketContext";
-
 import { has, isObject } from "lodash";
-
 import { AuthContext } from "../../context/Auth/AuthContext";
 import withWidth, { isWidthUp } from "@material-ui/core/withWidth";
 
@@ -41,7 +37,7 @@ const useStyles = makeStyles((theme) => ({
     flex: 1,
     height: "100%",
     border: "1px solid rgba(0, 0, 0, 0.12)",
-    backgroundColor: theme.palette.dark,
+    backgroundColor: theme.palette.background.paper,
   },
   gridItem: {
     height: "100%",
@@ -92,32 +88,23 @@ export function ChatModal({
       }
 
       if (type === "edit") {
-        await api.put(`/chats/${chat.id}`, {
-          users,
-          title,
-        });
+        await api.put(`/chats/${chat.id}`, { users, title });
       } else {
-        const { data } = await api.post("/chats", {
-          users,
-          title,
-        });
+        const { data } = await api.post("/chats", { users, title });
         handleLoadNewChat(data);
       }
       handleClose();
-    } catch (err) {}
-  };  
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      aria-labelledby="alert-dialog-title"
-      aria-describedby="alert-dialog-description"
-    >
-      <DialogTitle id="alert-dialog-title">Conversa</DialogTitle>
+    <Dialog open={open} onClose={handleClose}>
+      <DialogTitle>Conversa</DialogTitle>
       <DialogContent>
-        <Grid spacing={2} container>
-          <Grid xs={12} style={{ padding: 18 }} item>
+        <Grid container spacing={2}>
+          <Grid item xs={12} style={{ padding: 18 }}>
             <TextField
               label="Título"
               placeholder="Título"
@@ -128,7 +115,7 @@ export function ChatModal({
               fullWidth
             />
           </Grid>
-          <Grid xs={12} item>
+          <Grid item xs={12}>
             <UsersFilter
               onFiltered={(users) => setUsers(users)}
               initialUsers={users}
@@ -190,8 +177,7 @@ function Chat(props) {
         }
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [id]);
 
   useEffect(() => {
     if (isObject(currentChat) && has(currentChat, "id")) {
@@ -203,7 +189,6 @@ function Chat(props) {
         }
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentChat]);
 
   useEffect(() => {
@@ -215,16 +200,11 @@ function Chat(props) {
         setChats((prev) => [data.record, ...prev]);
       }
       if (data.action === "update") {
-        const changedChats = chats.map((chat) => {
-          if (chat.id === data.record.id) {
-            setCurrentChat(data.record);
-            return {
-              ...data.record,
-            };
-          }
-          return chat;
-        });
-        setChats(changedChats);
+        const updatedChats = chats.map((chat) =>
+          chat.id === data.record.id ? { ...data.record } : chat
+        );
+        setChats(updatedChats);
+        if (currentChat.id === data.record.id) setCurrentChat(data.record);
       }
     });
 
@@ -244,28 +224,18 @@ function Chat(props) {
       socket.on(`company-${companyId}-chat-${currentChat.id}`, (data) => {
         if (data.action === "new-message") {
           setMessages((prev) => [...prev, data.newMessage]);
-          const changedChats = chats.map((chat) => {
-            if (chat.id === data.newMessage.chatId) {
-              return {
-                ...data.chat,
-              };
-            }
-            return chat;
-          });
-          setChats(changedChats);
+          const updatedChats = chats.map((chat) =>
+            chat.id === data.newMessage.chatId ? { ...data.chat } : chat
+          );
+          setChats(updatedChats);
           scrollToBottomRef.current();
         }
 
         if (data.action === "update") {
-          const changedChats = chats.map((chat) => {
-            if (chat.id === data.chat.id) {
-              return {
-                ...data.chat,
-              };
-            }
-            return chat;
-          });
-          setChats(changedChats);
+          const updatedChats = chats.map((chat) =>
+            chat.id === data.chat.id ? { ...data.chat } : chat
+          );
+          setChats(updatedChats);
           scrollToBottomRef.current();
         }
       });
@@ -274,8 +244,7 @@ function Chat(props) {
     return () => {
       socket.disconnect();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentChat, socketManager]);
+  }, [currentChat, socketManager, user.id]);
 
   const selectChat = (chat) => {
     try {
@@ -283,7 +252,9 @@ function Chat(props) {
       setMessagesPage(1);
       setCurrentChat(chat);
       setTab(1);
-    } catch (err) {}
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const sendMessage = async (contentMessage) => {
@@ -292,33 +263,35 @@ function Chat(props) {
       await api.post(`/chats/${currentChat.id}/messages`, {
         message: contentMessage,
       });
-    } catch (err) {}
+    } catch (err) {
+      console.error(err);
+    }
     setLoading(false);
   };
 
   const deleteChat = async (chat) => {
     try {
       await api.delete(`/chats/${chat.id}`);
-    } catch (err) {}
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const findMessages = async (chatId) => {
     setLoading(true);
     try {
-      const { data } = await api.get(
-        `/chats/${chatId}/messages?pageNumber=${messagesPage}`
-      );
+      const { data } = await api.get(`/chats/${chatId}/messages?pageNumber=${messagesPage}`);
       setMessagesPage((prev) => prev + 1);
       setMessagesPageInfo(data);
       setMessages((prev) => [...data.records, ...prev]);
-    } catch (err) {}
+    } catch (err) {
+      console.error(err);
+    }
     setLoading(false);
   };
 
   const loadMoreMessages = async () => {
-    if (!loading) {
-      findMessages(currentChat.id);
-    }
+    if (!loading) findMessages(currentChat.id);
   };
 
   const findChats = async () => {
@@ -326,44 +299,90 @@ function Chat(props) {
       const { data } = await api.get("/chats");
       return data;
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 
-  const renderGrid = () => {
-    return (
-      <Grid className={classes.gridContainer} container>
-        <Grid className={classes.gridItem} md={3} item>
-          
-            <div className={classes.btnContainer}>
-              <Button
-                onClick={() => {
-                  setDialogType("new");
-                  setShowDialog(true);
-                }}
-                color="primary"
-                variant="contained"
-              >
-                Nova
-              </Button>
-            </div>
-          
+  const renderGrid = () => (
+    <Grid className={classes.gridContainer} container>
+      <Grid className={classes.gridItem} md={3} item>
+        <div className={classes.btnContainer}>
+          <Button
+            onClick={() => {
+              setDialogType("new");
+              setShowDialog(true);
+            }}
+            color="primary"
+            variant="contained"
+          >
+            Nova
+          </Button>
+        </div>
+        <ChatList
+          chats={chats}
+          pageInfo={chatsPageInfo}
+          loading={loading}
+          handleSelectChat={selectChat}
+          handleDeleteChat={deleteChat}
+          handleEditChat={() => {
+            setDialogType("edit");
+            setShowDialog(true);
+          }}
+        />
+      </Grid>
+      <Grid className={classes.gridItem} md={9} item>
+        {isObject(currentChat) && has(currentChat, "id") && (
+          <ChatMessages
+            chat={currentChat}
+            scrollToBottomRef={scrollToBottomRef}
+            pageInfo={messagesPageInfo}
+            messages={messages}
+            loading={loading}
+            handleSendMessage={sendMessage}
+            handleLoadMore={loadMoreMessages}
+          />
+        )}
+      </Grid>
+    </Grid>
+  );
+
+  const renderTab = () => (
+    <Grid className={classes.gridContainer} container>
+      <Grid md={12} item>
+        <Tabs
+          value={tab}
+          indicatorColor="primary"
+          textColor="primary"
+          onChange={(e, v) => setTab(v)}
+        >
+          <Tab label="Chats" />
+          <Tab label="Mensagens" />
+        </Tabs>
+      </Grid>
+      {tab === 0 && (
+        <Grid className={classes.gridItemTab} md={12} item>
+          <div className={classes.btnContainer}>
+            <Button
+              onClick={() => setShowDialog(true)}
+              color="primary"
+              variant="contained"
+            >
+              Novo
+            </Button>
+          </div>
           <ChatList
             chats={chats}
             pageInfo={chatsPageInfo}
             loading={loading}
-            handleSelectChat={(chat) => selectChat(chat)}
-            handleDeleteChat={(chat) => deleteChat(chat)}
-            handleEditChat={() => {
-              setDialogType("edit");
-              setShowDialog(true);
-            }}
+            handleSelectChat={selectChat}
+            handleDeleteChat={deleteChat}
           />
         </Grid>
-        <Grid className={classes.gridItem} md={9} item>
+      )}
+      {tab === 1 && (
+        <Grid className={classes.gridItemTab} md={12} item>
           {isObject(currentChat) && has(currentChat, "id") && (
             <ChatMessages
-              chat={currentChat}
               scrollToBottomRef={scrollToBottomRef}
               pageInfo={messagesPageInfo}
               messages={messages}
@@ -373,62 +392,9 @@ function Chat(props) {
             />
           )}
         </Grid>
-      </Grid>
-    );
-  };
-
-  const renderTab = () => {
-    return (
-      <Grid className={classes.gridContainer} container>
-        <Grid md={12} item>
-          <Tabs
-            value={tab}
-            indicatorColor="primary"
-            textColor="primary"
-            onChange={(e, v) => setTab(v)}
-            aria-label="disabled tabs example"
-          >
-            <Tab label="Chats" />
-            <Tab label="Mensagens" />
-          </Tabs>
-        </Grid>
-        {tab === 0 && (
-          <Grid className={classes.gridItemTab} md={12} item>
-            <div className={classes.btnContainer}>
-              <Button
-                onClick={() => setShowDialog(true)}
-                color="primary"
-                variant="contained"
-              >
-                Novo
-              </Button>
-            </div>
-            <ChatList
-              chats={chats}
-              pageInfo={chatsPageInfo}
-              loading={loading}
-              handleSelectChat={(chat) => selectChat(chat)}
-              handleDeleteChat={(chat) => deleteChat(chat)}
-            />
-          </Grid>
-        )}
-        {tab === 1 && (
-          <Grid className={classes.gridItemTab} md={12} item>
-            {isObject(currentChat) && has(currentChat, "id") && (
-              <ChatMessages
-                scrollToBottomRef={scrollToBottomRef}
-                pageInfo={messagesPageInfo}
-                messages={messages}
-                loading={loading}
-                handleSendMessage={sendMessage}
-                handleLoadMore={loadMoreMessages}
-              />
-            )}
-          </Grid>
-        )}
-      </Grid>
-    );
-  };
+      )}
+    </Grid>
+  );
 
   return (
     <>
