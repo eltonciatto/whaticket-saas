@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { BrowserRouter, Switch } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
+import Cookies from "js-cookie";
 
 import LoggedInLayout from "../layout";
 import Dashboard from "../pages/Dashboard/";
@@ -18,7 +19,6 @@ import MessagesAPI from "../pages/MessagesAPI/";
 import Helps from "../pages/Helps/";
 import ContactLists from "../pages/ContactLists/";
 import ContactListItems from "../pages/ContactListItems/";
-// import Companies from "../pages/Companies/";
 import QuickMessages from "../pages/QuickMessages/";
 import Kanban from "../pages/Kanban";
 import { AuthProvider } from "../context/Auth/AuthContext";
@@ -36,13 +36,13 @@ import Subscription from "../pages/Subscription/";
 import Files from "../pages/Files/";
 import Prompts from "../pages/Prompts";
 import QueueIntegration from "../pages/QueueIntegration";
-import ForgetPassword from "../pages/ForgetPassWord/"; // Reset PassWd
+import ForgetPassword from "../pages/ForgetPassWord/";
 
 const Routes = () => {
   const [showCampaigns, setShowCampaigns] = useState(false);
 
   useEffect(() => {
-    const cshow = localStorage.getItem("cshow");
+    const cshow = Cookies.get("cshow");
     if (cshow !== undefined) {
       setShowCampaigns(true);
     }
@@ -55,8 +55,7 @@ const Routes = () => {
           <Switch>
             <Route exact path="/login" component={Login} />
             <Route exact path="/signup" component={Signup} />
-			<Route exact path="/forgetpsw" component={ForgetPassword} /> 
-            {/* <Route exact path="/create-company" component={Companies} /> */}
+            <Route exact path="/forgetpsw" component={ForgetPassword} />
             <WhatsAppsProvider>
               <LoggedInLayout>
                 <Route exact path="/" component={Dashboard} isPrivate />
@@ -83,21 +82,20 @@ const Routes = () => {
                   path="/todolist"
                   component={ToDoList}
                   isPrivate
-                  />
-                <Route
-                  exact
-                  path="/schedules"
-                  component={Schedules}
-                  isPrivate
                 />
+                <Route exact path="/schedules" component={Schedules} isPrivate />
                 <Route exact path="/tags" component={Tags} isPrivate />
                 <Route exact path="/contacts" component={Contacts} isPrivate />
                 <Route exact path="/helps" component={Helps} isPrivate />
                 <Route exact path="/users" component={Users} isPrivate />
                 <Route exact path="/files" component={Files} isPrivate />
                 <Route exact path="/prompts" component={Prompts} isPrivate />
-                <Route exact path="/queue-integration" component={QueueIntegration} isPrivate />
-
+                <Route
+                  exact
+                  path="/queue-integration"
+                  component={QueueIntegration}
+                  isPrivate
+                />
                 <Route
                   exact
                   path="/messages-api"
@@ -110,18 +108,8 @@ const Routes = () => {
                   component={SettingsCustom}
                   isPrivate
                 />
-				        <Route 
-                  exact
-                  path="/kanban"
-                  component={Kanban}
-                  isPrivate
-                />
-                <Route
-                  exact
-                  path="/financeiro"
-                  component={Financeiro}
-                  isPrivate
-                />
+                <Route exact path="/kanban" component={Kanban} isPrivate />
+                <Route exact path="/financeiro" component={Financeiro} isPrivate />
                 <Route exact path="/queues" component={Queues} isPrivate />
                 <Route
                   exact
@@ -150,12 +138,7 @@ const Routes = () => {
                       component={ContactListItems}
                       isPrivate
                     />
-                    <Route
-                      exact
-                      path="/campaigns"
-                      component={Campaigns}
-                      isPrivate
-                    />
+                    <Route exact path="/campaigns" component={Campaigns} isPrivate />
                     <Route
                       exact
                       path="/campaign/:campaignId/report"
