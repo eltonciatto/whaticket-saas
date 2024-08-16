@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from "react";
-
 import { makeStyles } from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
 import { toast } from "react-toastify";
-
 import MainContainer from "../../components/MainContainer";
 import MainHeader from "../../components/MainHeader";
 import Title from "../../components/Title";
 import DeleteOutlineIcon from "@material-ui/icons/DeleteOutline";
 import api from "../../services/api";
-
 import { i18n } from "../../translate/i18n";
 import {
   Box,
@@ -62,39 +59,38 @@ const CampaignsConfig = () => {
   const [variable, setVariable] = useState({ key: "", value: "" });
 
   useEffect(() => {
-    api.get("/campaign-settings").then(({ data }) => {
-      const settingsList = [];
-      if (Array.isArray(data) && data.length > 0) {
-        data.forEach((item) => {
-          settingsList.push([item.key, JSON.parse(item.value)]);
-        });
-        setSettings(Object.fromEntries(settingsList));
+    const loadSettings = async () => {
+      try {
+        const { data } = await api.get("/campaign-settings");
+        if (Array.isArray(data) && data.length > 0) {
+          const settingsList = data.map((item) => [
+            item.key,
+            JSON.parse(item.value),
+          ]);
+          setSettings(Object.fromEntries(settingsList));
+        }
+      } catch (error) {
+        toast.error("Erro ao carregar as configurações.");
       }
-    });
+    };
+    loadSettings();
   }, []);
 
   const handleOnChangeVariable = (e) => {
-    if (e.target.value !== null) {
-      const changedProp = {};
-      changedProp[e.target.name] = e.target.value;
-      setVariable((prev) => ({ ...prev, ...changedProp }));
-    }
+    const { name, value } = e.target;
+    setVariable((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleOnChangeSettings = (e) => {
-    const changedProp = {};
-    changedProp[e.target.name] = e.target.value;
-    setSettings((prev) => ({ ...prev, ...changedProp }));
+    const { name, value } = e.target;
+    setSettings((prev) => ({ ...prev, [name]: value }));
   };
 
   const addVariable = () => {
     setSettings((prev) => {
-      const variablesExists = settings.variables.filter(
-        (v) => v.key === variable.key
-      );
-      const variables = prev.variables;
-      if (variablesExists.length === 0) {
-        variables.push(Object.assign({}, variable));
+      const variables = [...prev.variables];
+      if (!variables.some((v) => v.key === variable.key)) {
+        variables.push({ ...variable });
         setVariable({ key: "", value: "" });
       }
       return { ...prev, variables };
@@ -108,8 +104,12 @@ const CampaignsConfig = () => {
   };
 
   const saveSettings = async () => {
-    await api.post("/campaign-settings", { settings });
-    toast.success("Configurações salvas");
+    try {
+      await api.post("/campaign-settings", { settings });
+      toast.success("Configurações salvas");
+    } catch (error) {
+      toast.error("Erro ao salvar as configurações.");
+    }
   };
 
   return (
@@ -123,24 +123,20 @@ const CampaignsConfig = () => {
         {i18n.t("campaigns.confirmationModal.deleteMessage")}
       </ConfirmationModal>
       <MainHeader>
-        <Grid style={{ width: "99.6%" }} container>
-          <Grid xs={12} item>
+        <Grid container style={{ width: "99.6%" }}>
+          <Grid item xs={12}>
             <Title>{i18n.t("campaignsConfig.title")}</Title>
           </Grid>
         </Grid>
       </MainHeader>
       <Paper className={classes.mainPaper} variant="outlined">
         <Box className={classes.tabPanelsContainer}>
-          <Grid spacing={2} container>
-            <Grid xs={12} item>
-              <Typography component={"h3"}>Intervalos</Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <Typography component="h3">Intervalos</Typography>
             </Grid>
-            <Grid xs={12} md={4} item>
-              <FormControl
-                variant="outlined"
-                className={classes.formControl}
-                fullWidth
-              >
+            <Grid item xs={12} md={4}>
+              <FormControl variant="outlined" fullWidth>
                 <InputLabel id="messageInterval-label">
                   Intervalo Randômico de Disparo
                 </InputLabel>
@@ -150,7 +146,7 @@ const CampaignsConfig = () => {
                   labelId="messageInterval-label"
                   label="Intervalo Randômico de Disparo"
                   value={settings.messageInterval}
-                  onChange={(e) => handleOnChangeSettings(e)}
+                  onChange={handleOnChangeSettings}
                 >
                   <MenuItem value={0}>Sem Intervalo</MenuItem>
                   <MenuItem value={5}>5 segundos</MenuItem>
@@ -160,12 +156,8 @@ const CampaignsConfig = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid xs={12} md={4} item>
-              <FormControl
-                variant="outlined"
-                className={classes.formControl}
-                fullWidth
-              >
+            <Grid item xs={12} md={4}>
+              <FormControl variant="outlined" fullWidth>
                 <InputLabel id="longerIntervalAfter-label">
                   Intervalo Maior Após
                 </InputLabel>
@@ -175,7 +167,7 @@ const CampaignsConfig = () => {
                   labelId="longerIntervalAfter-label"
                   label="Intervalo Maior Após"
                   value={settings.longerIntervalAfter}
-                  onChange={(e) => handleOnChangeSettings(e)}
+                  onChange={handleOnChangeSettings}
                 >
                   <MenuItem value={0}>Não definido</MenuItem>
                   <MenuItem value={1}>1 segundo</MenuItem>
@@ -192,12 +184,8 @@ const CampaignsConfig = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid xs={12} md={4} item>
-              <FormControl
-                variant="outlined"
-                className={classes.formControl}
-                fullWidth
-              >
+            <Grid item xs={12} md={4}>
+              <FormControl variant="outlined" fullWidth>
                 <InputLabel id="greaterInterval-label">
                   Intervalo de Disparo Maior
                 </InputLabel>
@@ -207,7 +195,7 @@ const CampaignsConfig = () => {
                   labelId="greaterInterval-label"
                   label="Intervalo de Disparo Maior"
                   value={settings.greaterInterval}
-                  onChange={(e) => handleOnChangeSettings(e)}
+                  onChange={handleOnChangeSettings}
                 >
                   <MenuItem value={0}>Sem Intervalo</MenuItem>
                   <MenuItem value={1}>1 segundo</MenuItem>
@@ -224,7 +212,7 @@ const CampaignsConfig = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid xs={12} className={classes.textRight} item>
+            <Grid item xs={12} className={classes.textRight}>
               <Button
                 onClick={() => setShowVariablesForm(!showVariablesForm)}
                 color="primary"
@@ -242,7 +230,7 @@ const CampaignsConfig = () => {
             </Grid>
             {showVariablesForm && (
               <>
-                <Grid xs={12} md={6} item>
+                <Grid item xs={12} md={6}>
                   <TextField
                     label="Atalho"
                     variant="outlined"
@@ -252,7 +240,7 @@ const CampaignsConfig = () => {
                     fullWidth
                   />
                 </Grid>
-                <Grid xs={12} md={6} item>
+                <Grid item xs={12} md={6}>
                   <TextField
                     label="Conteúdo"
                     variant="outlined"
@@ -262,7 +250,7 @@ const CampaignsConfig = () => {
                     fullWidth
                   />
                 </Grid>
-                <Grid xs={12} className={classes.textRight} item>
+                <Grid item xs={12} className={classes.textRight}>
                   <Button
                     onClick={() => setShowVariablesForm(!showVariablesForm)}
                     color="primary"
@@ -281,7 +269,7 @@ const CampaignsConfig = () => {
               </>
             )}
             {settings.variables.length > 0 && (
-              <Grid xs={12} className={classes.textRight} item>
+              <Grid item xs={12} className={classes.textRight}>
                 <Table size="small">
                   <TableHead>
                     <TableRow>
@@ -291,24 +279,23 @@ const CampaignsConfig = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {Array.isArray(settings.variables) &&
-                      settings.variables.map((v, k) => (
-                        <TableRow key={k}>
-                          <TableCell>
-                            <IconButton
-                              size="small"
-                              onClick={() => {
-                                setSelectedKey(v.key);
-                                setConfirmationOpen(true);
-                              }}
-                            >
-                              <DeleteOutlineIcon />
-                            </IconButton>
-                          </TableCell>
-                          <TableCell>{"{" + v.key + "}"}</TableCell>
-                          <TableCell>{v.value}</TableCell>
-                        </TableRow>
-                      ))}
+                    {settings.variables.map((v, k) => (
+                      <TableRow key={k}>
+                        <TableCell>
+                          <IconButton
+                            size="small"
+                            onClick={() => {
+                              setSelectedKey(v.key);
+                              setConfirmationOpen(true);
+                            }}
+                          >
+                            <DeleteOutlineIcon />
+                          </IconButton>
+                        </TableCell>
+                        <TableCell>{"{" + v.key + "}"}</TableCell>
+                        <TableCell>{v.value}</TableCell>
+                      </TableRow>
+                    ))}
                   </TableBody>
                 </Table>
               </Grid>
