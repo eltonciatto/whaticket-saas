@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, useCallback } from "react";
 import Paper from "@material-ui/core/Paper";
 import Container from "@material-ui/core/Container";
 import Grid from "@material-ui/core/Grid";
@@ -12,26 +12,17 @@ import Typography from "@material-ui/core/Typography";
 import { Button } from "@material-ui/core";
 import MobileFriendlyIcon from "@material-ui/icons/MobileFriendly";
 import StoreIcon from "@material-ui/icons/Store";
-import SpeedIcon from "@material-ui/icons/Speed";
-import GroupIcon from "@material-ui/icons/Group";
-import AssignmentIcon from "@material-ui/icons/Assignment";
-import PersonIcon from "@material-ui/icons/Person";
 import CallIcon from "@material-ui/icons/Call";
-import RecordVoiceOverIcon from "@material-ui/icons/RecordVoiceOver";
-import GroupAddIcon from "@material-ui/icons/GroupAdd";
 import HourglassEmptyIcon from "@material-ui/icons/HourglassEmpty";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
-import ForumIcon from "@material-ui/icons/Forum";
+import GroupAddIcon from "@material-ui/icons/GroupAdd";
 import AccessAlarmIcon from "@material-ui/icons/AccessAlarm";
 import TimerIcon from "@material-ui/icons/Timer";
 
 import { makeStyles } from "@material-ui/core/styles";
-import { grey, blue } from "@material-ui/core/colors";
 import { toast } from "react-toastify";
 
-import Chart from "./Chart";
 import ButtonWithSpinner from "../../components/ButtonWithSpinner";
-import CardCounter from "../../components/Dashboard/CardCounter";
 import TableAttendantsStatus from "../../components/Dashboard/TableAttendantsStatus";
 import { isArray, isEmpty } from "lodash";
 import { AuthContext } from "../../context/Auth/AuthContext";
@@ -45,6 +36,7 @@ const useStyles = makeStyles((theme) => ({
   container: {
     paddingTop: theme.spacing(4),
     paddingBottom: theme.spacing(4),
+    overflowX: "hidden", // Evitar barra de rolagem horizontal
   },
   fixedHeightPaper: {
     padding: theme.spacing(2),
@@ -56,11 +48,13 @@ const useStyles = makeStyles((theme) => ({
   card: {
     padding: theme.spacing(2),
     display: "flex",
-    overflow: "auto",
+    overflow: "hidden", // Melhorar a responsividade
     flexDirection: "column",
     height: "100%",
     backgroundColor: "#012489",
     color: "#eee",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   },
   selectContainer: {
     width: "100%",
@@ -101,7 +95,7 @@ const Dashboard = () => {
     firstLoad();
   }, []);
 
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     setLoading(true);
 
     let params = {};
@@ -127,7 +121,7 @@ const Dashboard = () => {
     setCounters(data.counters);
     setAttendants(isArray(data.attendants) ? data.attendants : []);
     setLoading(false);
-  }
+  }, [filters, find]);
 
   const handleChangePeriod = (value) => {
     setFilters((prev) => ({ ...prev, period: value }));
@@ -143,10 +137,10 @@ const Dashboard = () => {
     }));
   };
 
-  const GetContacts = (all) => {
+  const GetContacts = useCallback(() => {
     const { count } = useContacts({});
     return count;
-  };
+  }, []);
 
   const formatTime = (minutes) => {
     return moment()
@@ -155,10 +149,10 @@ const Dashboard = () => {
       .format("HH[h] mm[m]");
   };
 
-  const renderFilters = () => {
+  const renderFilters = useCallback(() => {
     return filters.filterType === 1 ? (
       <>
-        <Grid item xs={12} sm={6} md={4}>
+        <Grid item xs={12} sm={6} md={4} lg={3}>
           <TextField
             label="Data Inicial"
             type="date"
@@ -172,7 +166,7 @@ const Dashboard = () => {
             }}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={4}>
+        <Grid item xs={12} sm={6} md={4} lg={3}>
           <TextField
             label="Data Final"
             type="date"
@@ -188,7 +182,7 @@ const Dashboard = () => {
         </Grid>
       </>
     ) : (
-      <Grid item xs={12} sm={6} md={4}>
+      <Grid item xs={12} sm={6} md={4} lg={3}>
         <FormControl className={classes.selectContainer}>
           <InputLabel id="period-selector-label">Período</InputLabel>
           <Select
@@ -209,13 +203,13 @@ const Dashboard = () => {
         </FormControl>
       </Grid>
     );
-  };
+  }, [filters, classes]);
 
   return (
     <div>
       <Container maxWidth="lg" className={classes.container}>
         <Grid container spacing={3} justifyContent="flex-end">
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid item xs={12} sm={6} md={4} lg={3}>
             <FormControl className={classes.selectContainer}>
               <InputLabel id="period-selector-label">Tipo de Filtro</InputLabel>
               <Select
@@ -242,7 +236,7 @@ const Dashboard = () => {
           </Grid>
 
           {user.super && (
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid item xs={12} sm={6} md={4} lg={3}>
               <Paper className={classes.card} elevation={4}>
                 <Grid container spacing={3}>
                   <Grid item xs={8}>
@@ -264,7 +258,7 @@ const Dashboard = () => {
           )}
 
           {user.super && (
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid item xs={12} sm={6} md={4} lg={3}>
               <Paper className={classes.card} elevation={4}>
                 <Grid container spacing={3}>
                   <Grid item xs={8}>
@@ -283,7 +277,7 @@ const Dashboard = () => {
             </Grid>
           )}
 
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid item xs={12} sm={6} md={4} lg={3}>
             <Paper className={classes.card} elevation={4}>
               <Grid container spacing={3}>
                 <Grid item xs={8}>
@@ -301,7 +295,7 @@ const Dashboard = () => {
             </Paper>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid item xs={12} sm={6} md={4} lg={3}>
             <Paper className={classes.card} elevation={6}>
               <Grid container spacing={3}>
                 <Grid item xs={8}>
@@ -319,7 +313,7 @@ const Dashboard = () => {
             </Paper>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid item xs={12} sm={6} md={4} lg={3}>
             <Paper className={classes.card} elevation={6}>
               <Grid container spacing={3}>
                 <Grid item xs={8}>
@@ -337,7 +331,7 @@ const Dashboard = () => {
             </Paper>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid item xs={12} sm={6} md={4} lg={3}>
             <Paper className={classes.card} elevation={6}>
               <Grid container spacing={3}>
                 <Grid item xs={8}>
@@ -355,7 +349,7 @@ const Dashboard = () => {
             </Paper>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid item xs={12} sm={6} md={4} lg={3}>
             <Paper className={classes.card} elevation={6}>
               <Grid container spacing={3}>
                 <Grid item xs={8}>
@@ -373,7 +367,7 @@ const Dashboard = () => {
             </Paper>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid item xs={12} sm={6} md={4} lg={3}>
             <Paper className={classes.card} elevation={6}>
               <Grid container spacing={3}>
                 <Grid item xs={8}>
@@ -392,12 +386,12 @@ const Dashboard = () => {
           </Grid>
 
           <Grid item xs={12}>
-            {attendants.length ? (
+            {attendants.length > 0 && (
               <TableAttendantsStatus
                 attendants={attendants}
                 loading={loading}
               />
-            ) : null}
+            )}
           </Grid>
 
           <Grid item xs={12}>
