@@ -77,12 +77,18 @@ const Login = () => {
   const history = useHistory();
 
   useEffect(() => {
-    // Verifica se o cookie de sessão já existe
-    const sessionCookie = Cookies.get("user_session");
+    // Verifica se o usuário já fez login antes
+    const firstLogin = Cookies.get("firstLogin");
 
-    // Exibe o aviso de sessão expirada somente se o cookie existir
-    if (sessionCookie) {
-      setShowSessionExpiredAlert(true);
+    if (firstLogin) {
+      // Se o usuário já fez login antes, verifica se a sessão está expirada
+      const sessionCookie = Cookies.get("user_session");
+      if (sessionCookie === "expired") {
+        setShowSessionExpiredAlert(true);
+      }
+    } else {
+      // Marca que o usuário está acessando pela primeira vez
+      Cookies.set("firstLogin", "true");
     }
   }, []);
 
