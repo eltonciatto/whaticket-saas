@@ -3,8 +3,8 @@ import { makeStyles } from "@material-ui/core/styles";
 
 import Paper from "@material-ui/core/Paper";
 import Button from "@material-ui/core/Button";
-import Grid from '@material-ui/core/Grid';
-import TextField from '@material-ui/core/TextField';
+import Grid from "@material-ui/core/Grid";
+import TextField from "@material-ui/core/TextField";
 
 import SubscriptionModal from "../../components/SubscriptionModal";
 import MainHeader from "../../components/MainHeader";
@@ -22,7 +22,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const _formatDate = (date) => {
+const formatDateDifference = (date) => {
   const now = new Date();
   const past = new Date(date);
   const diff = Math.abs(now.getTime() - past.getTime());
@@ -31,16 +31,15 @@ const _formatDate = (date) => {
   return days;
 }
 
-const Contacts = () => {
+const Subscription = () => {
   const classes = useStyles();
   const { user } = useContext(AuthContext);
 
-  const [loading,] = useState(false);
-  const [, setPageNumber] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [pageNumber, setPageNumber] = useState(1);
   const [selectedContactId, setSelectedContactId] = useState(null);
   const [contactModalOpen, setContactModalOpen] = useState(false);
-  const [hasMore,] = useState(false);
-
+  const [hasMore, setHasMore] = useState(false);
 
   const handleOpenContactModal = () => {
     setSelectedContactId(null);
@@ -71,23 +70,21 @@ const Contacts = () => {
         onClose={handleCloseContactModal}
         aria-labelledby="form-dialog-title"
         contactId={selectedContactId}
-      ></SubscriptionModal>
+      />
 
       <MainHeader>
         <Title>Assinatura</Title>
       </MainHeader>
-      <Grid item xs={12} sm={4}>
+      <Grid item xs={12} sm={6}>
         <Paper
           className={classes.mainPaper}
           variant="outlined"
           onScroll={handleScroll}
         >
-
           <div>
             <TextField
-              id="outlined-full-width"
               label="Período de teste"
-              defaultValue={`Seu período de teste termina em ${_formatDate(user?.company?.trialExpiration)} dias!`}
+              defaultValue={`Seu período de teste termina em ${formatDateDifference(user?.company?.trialExpiration)} dias!`}
               fullWidth
               margin="normal"
               InputLabelProps={{
@@ -98,12 +95,10 @@ const Contacts = () => {
               }}
               variant="outlined"
             />
-
           </div>
 
           <div>
             <TextField
-              id="outlined-full-width"
               label="Email de cobrança"
               defaultValue={user?.company?.email}
               fullWidth
@@ -116,7 +111,6 @@ const Contacts = () => {
               }}
               variant="outlined"
             />
-
           </div>
 
           <div>
@@ -129,11 +123,10 @@ const Contacts = () => {
               Assine Agora!
             </Button>
           </div>
-
         </Paper>
       </Grid>
     </MainContainer>
   );
 };
 
-export default Contacts;
+export default Subscription;
