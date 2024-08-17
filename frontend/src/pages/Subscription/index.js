@@ -1,10 +1,11 @@
 import React, { useState, useContext } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-
 import Paper from "@material-ui/core/Paper";
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
 import TextField from "@material-ui/core/TextField";
+import { formatDistanceToNowStrict, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 import SubscriptionModal from "../../components/SubscriptionModal";
 import MainHeader from "../../components/MainHeader";
@@ -22,45 +23,24 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const formatDateDifference = (date) => {
-  const now = new Date();
-  const past = new Date(date);
-  const diff = Math.abs(now.getTime() - past.getTime());
-  const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-
-  return days;
-}
-
 const Subscription = () => {
   const classes = useStyles();
   const { user } = useContext(AuthContext);
 
-  const [loading, setLoading] = useState(false);
-  const [pageNumber, setPageNumber] = useState(1);
-  const [selectedContactId, setSelectedContactId] = useState(null);
   const [contactModalOpen, setContactModalOpen] = useState(false);
-  const [hasMore, setHasMore] = useState(false);
 
   const handleOpenContactModal = () => {
-    setSelectedContactId(null);
     setContactModalOpen(true);
   };
 
   const handleCloseContactModal = () => {
-    setSelectedContactId(null);
     setContactModalOpen(false);
   };
 
-  const loadMore = () => {
-    setPageNumber((prevState) => prevState + 1);
-  };
-
-  const handleScroll = (e) => {
-    if (!hasMore || loading) return;
-    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    if (scrollHeight - (scrollTop + 100) < clientHeight) {
-      loadMore();
-    }
+  const formatDateDifference = (date) => {
+    if (!date) return "Data inválida";
+    const parsedDate = parseISO(date);
+    return formatDistanceToNowStrict(parsedDate, { locale: ptBR });
   };
 
   return (
@@ -69,7 +49,6 @@ const Subscription = () => {
         open={contactModalOpen}
         onClose={handleCloseContactModal}
         aria-labelledby="form-dialog-title"
-        contactId={selectedContactId}
       />
 
       <MainHeader>
@@ -79,12 +58,11 @@ const Subscription = () => {
         <Paper
           className={classes.mainPaper}
           variant="outlined"
-          onScroll={handleScroll}
         >
           <div>
             <TextField
               label="Período de teste"
-              defaultValue={`Seu período de teste termina em ${formatDateDifference(user?.company?.trialExpiration)} dias!`}
+              defaultValue={`Seu período de teste termina em ${formatDateDifference(user?.company?.trialExpiration)}.`}
               fullWidth
               margin="normal"
               InputLabelProps={{
