@@ -1,6 +1,4 @@
 import React, { useEffect, useRef } from "react";
-
-
 import { makeStyles } from "@material-ui/core/styles";
 import { green } from "@material-ui/core/colors";
 import Dialog from "@material-ui/core/Dialog";
@@ -16,17 +14,14 @@ const useStyles = makeStyles((theme) => ({
     marginRight: theme.spacing(1),
     flex: 1,
   },
-
   extraAttr: {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
   },
-
   btnWrapper: {
     position: "relative",
   },
-
   buttonProgress: {
     color: green[500],
     position: "absolute",
@@ -37,18 +32,15 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-
-const ContactModal = ({ open, onClose, Invoice, contactId, initialValues, onSave }) => {
+const SubscriptionModal = ({ open, onClose, invoice }) => {
   const classes = useStyles();
   const isMounted = useRef(true);
-
 
   useEffect(() => {
     return () => {
       isMounted.current = false;
     };
   }, []);
-
 
   const handleClose = () => {
     onClose();
@@ -58,13 +50,17 @@ const ContactModal = ({ open, onClose, Invoice, contactId, initialValues, onSave
     <div className={classes.root}>
       <Dialog open={open} onClose={handleClose} maxWidth="md" scroll="paper">
         <DialogContent dividers>
-          <CheckoutPage
-            Invoice={Invoice}
-          />
+          {invoice ? (
+            <CheckoutPage invoice={invoice} />
+          ) : (
+            <div>
+              <p>Erro: Fatura não encontrada.</p>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
   );
 };
 
-export default ContactModal;
+export default SubscriptionModal;
