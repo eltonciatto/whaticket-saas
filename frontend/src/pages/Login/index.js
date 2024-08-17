@@ -1,5 +1,6 @@
-import React, { useState, useContext, useCallback } from "react";
-import { Link as RouterLink } from "react-router-dom";
+import React, { useState, useContext, useCallback, useEffect } from "react";
+import { Link as RouterLink, useHistory } from "react-router-dom";
+import Cookies from "js-cookie";
 import {
   Button,
   CssBaseline,
@@ -72,6 +73,18 @@ const Login = () => {
   const { handleLogin } = useContext(AuthContext);
   const [user, setUser] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
+  const [showSessionExpiredAlert, setShowSessionExpiredAlert] = useState(false);
+  const history = useHistory();
+
+  useEffect(() => {
+    // Verifica se o cookie de sessão já existe
+    const sessionCookie = Cookies.get("user_session");
+
+    // Exibe o aviso de sessão expirada somente se o cookie existir
+    if (sessionCookie) {
+      setShowSessionExpiredAlert(true);
+    }
+  }, []);
 
   const handleChangeInput = useCallback(
     (e) => {
@@ -85,6 +98,9 @@ const Login = () => {
     setLoading(true);
     try {
       await handleLogin(user);
+
+      // Define o cookie de sessão após login bem-sucedido
+      Cookies.set("user_session", "active", { expires: 7 });
     } finally {
       setLoading(false);
     }
@@ -102,6 +118,11 @@ const Login = () => {
           <Typography variant="h5" className={classes.welcomeText}>
             Bem-vindo ao Sendbot
           </Typography>
+          {showSessionExpiredAlert && (
+            <Typography variant="body2" color="error">
+              Sessão expirada. Faça login novamente.
+            </Typography>
+          )}
           <form className={classes.form} noValidate onSubmit={handleSubmit}>
             <TextField
               variant="outlined"
