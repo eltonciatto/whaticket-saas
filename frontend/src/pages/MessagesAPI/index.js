@@ -5,6 +5,7 @@ import { Paper, Button, CircularProgress, Grid, TextField, Typography } from "@m
 import { Formik, Form, Field } from "formik";
 import { toast } from "react-toastify";
 import axios from "axios";
+import Cookies from "js-cookie";
 import usePlans from "../../hooks/usePlans";
 import { i18n } from "../../translate/i18n";
 import toastError from "../../errors/toastError";
@@ -35,7 +36,7 @@ const MessagesAPI = () => {
 
   useEffect(() => {
     const verifyPlanAccess = async () => {
-      const companyId = localStorage.getItem("companyId");
+      const companyId = Cookies.get("companyId");
       const planConfigs = await getPlanCompany(undefined, companyId);
       if (!planConfigs.plan.useExternalApi) {
         toast.error("Esta empresa não possui permissão para acessar essa página! Redirecionando...");
