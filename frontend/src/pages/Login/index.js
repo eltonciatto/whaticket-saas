@@ -77,9 +77,10 @@ const Login = () => {
   const history = useHistory();
 
   useEffect(() => {
-    // Verifica se o cookie de sessão existe e está marcado como expirado
+    // Verifica se o cookie de sessão existe e se está marcado como expirado
     const sessionCookie = Cookies.get("user_session");
 
+    // Só exibe o aviso se o cookie indicar "expired" explicitamente
     if (sessionCookie === "expired") {
       setShowSessionExpiredAlert(true);
     }
