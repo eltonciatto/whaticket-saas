@@ -11,7 +11,9 @@ import TableRow from "@material-ui/core/TableRow";
 import TextField from "@material-ui/core/TextField";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import SearchIcon from "@material-ui/icons/Search";
-import moment from "moment";
+import { format, differenceInDays, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import Grid from "@material-ui/core/Grid"; // Adicionado para responsividade
 
 import MainContainer from "../../components/MainContainer";
 import MainHeader from "../../components/MainHeader";
@@ -20,7 +22,7 @@ import SubscriptionModal from "../../components/SubscriptionModal";
 import api from "../../services/api";
 import toastError from "../../errors/toastError";
 import TableRowSkeleton from "../../components/TableRowSkeleton";
-import MainHeaderButtonsWrapper from "../../components/MainHeaderButtonsWrapper"; // Importação adicionada
+import MainHeaderButtonsWrapper from "../../components/MainHeaderButtonsWrapper";
 
 const reducer = (state, action) => {
   switch (action.type) {
@@ -45,9 +47,20 @@ const reducer = (state, action) => {
 const useStyles = makeStyles((theme) => ({
   mainPaper: {
     flex: 1,
-    padding: theme.spacing(1),
+    padding: theme.spacing(2), // Ajuste de padding para melhor visualização
     overflowY: "auto",
     ...theme.scrollbarStyles,
+  },
+  tableCell: {
+    padding: theme.spacing(1),
+    fontSize: "0.875rem", // Ajuste de fonte para telas pequenas
+  },
+  searchField: {
+    width: "100%", // Garante que o campo de busca ocupe a largura total em telas menores
+  },
+  buttonContainer: {
+    display: "flex",
+    justifyContent: "flex-end",
   },
 }));
 
@@ -108,10 +121,9 @@ const Invoices = () => {
   };
 
   const rowStyle = (invoice) => {
-    const today = moment().format("DD/MM/yyyy");
-    const dueDate = moment(invoice.dueDate).format("DD/MM/yyyy");
-    const diff = moment(dueDate, "DD/MM/yyyy").diff(moment(today, "DD/MM/yyyy"));
-    const daysRemaining = moment.duration(diff).asDays();
+    const today = new Date();
+    const dueDate = parseISO(invoice.dueDate);
+    const daysRemaining = differenceInDays(dueDate, today);
 
     if (daysRemaining < 0 && invoice.status !== "paid") {
       return { backgroundColor: "#ffbcbc9c" };
@@ -119,10 +131,9 @@ const Invoices = () => {
   };
 
   const rowStatus = (invoice) => {
-    const today = moment().format("DD/MM/yyyy");
-    const dueDate = moment(invoice.dueDate).format("DD/MM/yyyy");
-    const diff = moment(dueDate, "DD/MM/yyyy").diff(moment(today, "DD/MM/yyyy"));
-    const daysRemaining = moment.duration(diff).asDays();
+    const today = new Date();
+    const dueDate = parseISO(invoice.dueDate);
+    const daysRemaining = differenceInDays(dueDate, today);
 
     if (invoice.status === "paid") return "Pago";
     return daysRemaining < 0 ? "Vencido" : "Em Aberto";
@@ -143,6 +154,7 @@ const Invoices = () => {
             type="search"
             value={searchParam}
             onChange={(e) => setSearchParam(e.target.value)}
+            className={classes.searchField}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -154,55 +166,59 @@ const Invoices = () => {
         </MainHeaderButtonsWrapper>
       </MainHeader>
       <Paper className={classes.mainPaper} variant="outlined" onScroll={handleScroll}>
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell align="center">Id</TableCell>
-              <TableCell align="center">Detalhes</TableCell>
-              <TableCell align="center">Valor</TableCell>
-              <TableCell align="center">Data Venc.</TableCell>
-              <TableCell align="center">Status</TableCell>
-              <TableCell align="center">Ação</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {invoices.map((invoice) => (
-              <TableRow key={invoice.id} style={rowStyle(invoice)}>
-                <TableCell align="center">{invoice.id}</TableCell>
-                <TableCell align="center">{invoice.detail}</TableCell>
-                <TableCell align="center" style={{ fontWeight: "bold" }}>
-                  {invoice.value.toLocaleString("pt-br", {
-                    style: "currency",
-                    currency: "BRL",
-                  })}
-                </TableCell>
-                <TableCell align="center">
-                  {moment(invoice.dueDate).format("DD/MM/YYYY")}
-                </TableCell>
-                <TableCell align="center" style={{ fontWeight: "bold" }}>
-                  {rowStatus(invoice)}
-                </TableCell>
-                <TableCell align="center">
-                  {rowStatus(invoice) !== "Pago" ? (
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      color="secondary"
-                      onClick={() => handleOpenSubscriptionModal(invoice)}
-                    >
-                      PAGAR
-                    </Button>
-                  ) : (
-                    <Button size="small" variant="outlined" disabled>
-                      PAGO
-                    </Button>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-            {loading && <TableRowSkeleton columns={6} />}
-          </TableBody>
-        </Table>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell align="center" className={classes.tableCell}>Id</TableCell>
+                  <TableCell align="center" className={classes.tableCell}>Detalhes</TableCell>
+                  <TableCell align="center" className={classes.tableCell}>Valor</TableCell>
+                  <TableCell align="center" className={classes.tableCell}>Data Venc.</TableCell>
+                  <TableCell align="center" className={classes.tableCell}>Status</TableCell>
+                  <TableCell align="center" className={classes.tableCell}>Ação</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {invoices.map((invoice) => (
+                  <TableRow key={invoice.id} style={rowStyle(invoice)}>
+                    <TableCell align="center" className={classes.tableCell}>{invoice.id}</TableCell>
+                    <TableCell align="center" className={classes.tableCell}>{invoice.detail}</TableCell>
+                    <TableCell align="center" className={classes.tableCell} style={{ fontWeight: "bold" }}>
+                      {invoice.value.toLocaleString("pt-br", {
+                        style: "currency",
+                        currency: "BRL",
+                      })}
+                    </TableCell>
+                    <TableCell align="center" className={classes.tableCell}>
+                      {format(parseISO(invoice.dueDate), "dd/MM/yyyy", { locale: ptBR })}
+                    </TableCell>
+                    <TableCell align="center" className={classes.tableCell} style={{ fontWeight: "bold" }}>
+                      {rowStatus(invoice)}
+                    </TableCell>
+                    <TableCell align="center" className={classes.tableCell}>
+                      {rowStatus(invoice) !== "Pago" ? (
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="secondary"
+                          onClick={() => handleOpenSubscriptionModal(invoice)}
+                        >
+                          PAGAR
+                        </Button>
+                      ) : (
+                        <Button size="small" variant="outlined" disabled>
+                          PAGO
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {loading && <TableRowSkeleton columns={6} />}
+              </TableBody>
+            </Table>
+          </Grid>
+        </Grid>
       </Paper>
     </MainContainer>
   );
