@@ -11,9 +11,9 @@ import HelpsManager from "../../components/HelpsManager";
 import Options from "../../components/Settings/Options";
 import { i18n } from "../../translate/i18n.js";
 import { toast } from "react-toastify";
-import useCompanies from "../../hooks/useCompanies";
+import useCompanies from "../../hooks/useCompanies.js";
 import useAuth from "../../hooks/useAuth.js";
-import useSettings from "../../hooks/useSettings";
+import useSettings from "../../hooks/useSettings.js";
 import OnlyForSuperUser from "../../components/OnlyForSuperUser";
 
 const useStyles = makeStyles((theme) => ({
