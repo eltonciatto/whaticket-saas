@@ -9,7 +9,7 @@ import CompaniesManager from "../../components/CompaniesManager";
 import PlansManager from "../../components/PlansManager";
 import HelpsManager from "../../components/HelpsManager";
 import Options from "../../components/Settings/Options";
-import { i18n } from "../../translate/i18n";
+import { i18n } from "../../translate/i18n.js";
 import { toast } from "react-toastify";
 import useCompanies from "../../hooks/useCompanies";
 import useAuth from "../../hooks/useAuth.js";
