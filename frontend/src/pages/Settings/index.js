@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useContext } from "react";
-
 import { makeStyles } from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import Container from "@material-ui/core/Container";
 import Select from "@material-ui/core/Select";
 import { toast } from "react-toastify";
+import Cookies from "js-cookie";
 
 import api from "../../services/api";
 import { i18n } from "../../translate/i18n.js";
@@ -18,13 +18,11 @@ const useStyles = makeStyles((theme) => ({
     alignItems: "center",
     padding: theme.spacing(4),
   },
-
   paper: {
     padding: theme.spacing(2),
     display: "flex",
     alignItems: "center",
   },
-
   settingOption: {
     marginLeft: "auto",
   },
@@ -35,13 +33,11 @@ const useStyles = makeStyles((theme) => ({
 
 const Settings = () => {
   const classes = useStyles();
-
   const [settings, setSettings] = useState([]);
-
   const socketManager = useContext(SocketContext);
 
   useEffect(() => {
-    const fetchSession = async () => {
+    const fetchSettings = async () => {
       try {
         const { data } = await api.get("/settings");
         setSettings(data);
@@ -49,20 +45,24 @@ const Settings = () => {
         toastError(err);
       }
     };
-    fetchSession();
+    fetchSettings();
   }, []);
 
   useEffect(() => {
-    const companyId = localStorage.getItem("companyId");
+    const companyId = Cookies.get("companyId"); // Usando js-cookie para obter o companyId
     const socket = socketManager.getSocket(companyId);
 
     socket.on(`company-${companyId}-settings`, (data) => {
       if (data.action === "update") {
         setSettings((prevState) => {
-          const aux = [...prevState];
-          const settingIndex = aux.findIndex((s) => s.key === data.setting.key);
-          aux[settingIndex].value = data.setting.value;
-          return aux;
+          const updatedSettings = [...prevState];
+          const settingIndex = updatedSettings.findIndex(
+            (s) => s.key === data.setting.key
+          );
+          if (settingIndex !== -1) {
+            updatedSettings[settingIndex].value = data.setting.value;
+          }
+          return updatedSettings;
         });
       }
     });
@@ -87,8 +87,8 @@ const Settings = () => {
   };
 
   const getSettingValue = (key) => {
-    const { value } = settings.find((s) => s.key === key);
-    return value;
+    const setting = settings.find((s) => s.key === key);
+    return setting ? setting.value : "";
   };
 
   return (
