@@ -68,20 +68,6 @@ const Copyright = () => (
   </Typography>
 );
 
-// Middleware de verificação de sessão
-const checkSessionMiddleware = () => {
-  const sessionStatus = Cookies.get("user_session");
-  const hasLoggedIn = Cookies.get("has_logged_in"); // Novo cookie para rastrear se o usuário já fez login
-
-  // Se o usuário nunca fez login, não exiba a mensagem de sessão expirada
-  if (!hasLoggedIn) {
-    return false;
-  }
-
-  // Exibe a mensagem apenas se o cookie de sessão estiver marcado como "expired"
-  return sessionStatus === "expired";
-};
-
 const Login = () => {
   const classes = useStyles();
   const { handleLogin } = useContext(AuthContext);
@@ -91,7 +77,11 @@ const Login = () => {
   const history = useHistory();
 
   useEffect(() => {
-    if (checkSessionMiddleware()) {
+    const sessionCookie = Cookies.get("user_session");
+    const hasLoggedIn = Cookies.get("has_logged_in");
+
+    // A mensagem só será exibida se o usuário já fez login antes e a sessão expirou
+    if (hasLoggedIn && sessionCookie === "expired") {
       setShowSessionExpiredAlert(true);
     }
   }, []);
