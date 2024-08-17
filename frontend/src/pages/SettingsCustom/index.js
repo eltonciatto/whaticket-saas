@@ -1,20 +1,24 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import MainContainer from "../../components/MainContainer";
 import MainHeader from "../../components/MainHeader";
 import Title from "../../components/Title";
 import { makeStyles, Paper, Tabs, Tab } from "@material-ui/core";
+import Cookies from "js-cookie"; // Importando js-cookie
+
 import TabPanel from "../../components/TabPanel";
 import SchedulesForm from "../../components/SchedulesForm";
 import CompaniesManager from "../../components/CompaniesManager";
 import PlansManager from "../../components/PlansManager";
 import HelpsManager from "../../components/HelpsManager";
 import Options from "../../components/Settings/Options";
+
 import { i18n } from "../../translate/i18n.js";
 import { toast } from "react-toastify";
-import Cookies from "js-cookie";
+
 import useCompanies from "../../hooks/useCompanies";
 import useAuth from "../../hooks/useAuth.js";
 import useSettings from "../../hooks/useSettings";
+
 import OnlyForSuperUser from "../../components/OnlyForSuperUser";
 
 const useStyles = makeStyles((theme) => ({
@@ -43,6 +47,12 @@ const useStyles = makeStyles((theme) => ({
     width: "100%",
     maxHeight: "100%",
   },
+  control: {
+    padding: theme.spacing(1),
+  },
+  textfield: {
+    width: "100%",
+  },
 }));
 
 const SettingsCustom = () => {
@@ -59,54 +69,85 @@ const SettingsCustom = () => {
   const { find, updateSchedules } = useCompanies();
   const { getAll: getAllSettings } = useSettings();
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const companyId = Cookies.get("companyId");
-      const [companyData, settingsData, userData] = await Promise.all([
-        find(companyId),
-        getAllSettings(),
-        getCurrentUserInfo(),
-      ]);
+  useEffect(() => {
+    async function findData() {
+      setLoading(true);
+      try {
+        const companyId = Cookies.get("companyId"); // Usando js-cookie para obter o companyId
+        const company = await find(companyId);
+        const settingList = await getAllSettings();
+        setCompany(company);
+        setSchedules(company.schedules);
+        setSettings(settingList);
 
-      setCompany(companyData);
-      setSchedules(companyData.schedules);
-      setSettings(settingsData);
-      setCurrentUser(userData);
+        if (Array.isArray(settingList)) {
+          const scheduleType = settingList.find(
+            (d) => d.key === "scheduleType"
+          );
+          if (scheduleType) {
+            setSchedulesEnabled(scheduleType.value === "company");
+          }
+        }
 
-      const scheduleType = settingsData.find((d) => d.key === "scheduleType");
-      if (scheduleType) {
-        setSchedulesEnabled(scheduleType.value === "company");
+        const user = await getCurrentUserInfo();
+        setCurrentUser(user);
+      } catch (e) {
+        toast.error(e);
       }
-    } catch (e) {
-      toast.error(i18n.t("settings.loadError"));
-    } finally {
       setLoading(false);
     }
-  }, [find, getAllSettings, getCurrentUserInfo]);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+    findData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleTabChange = (event, newValue) => {
+      async function findData() {
+        setLoading(true);
+        try {
+          const companyId = Cookies.get("companyId"); // Usando js-cookie para obter o companyId
+          const company = await find(companyId);
+          const settingList = await getAllSettings();
+          setCompany(company);
+          setSchedules(company.schedules);
+          setSettings(settingList);
+  
+          if (Array.isArray(settingList)) {
+            const scheduleType = settingList.find(
+              (d) => d.key === "scheduleType"
+            );
+            if (scheduleType) {
+              setSchedulesEnabled(scheduleType.value === "company");
+            }
+          }
+  
+          const user = await getCurrentUserInfo();
+          setCurrentUser(user);
+        } catch (e) {
+          toast.error(e);
+        }
+        setLoading(false);
+      }
+      findData();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+
     setTab(newValue);
   };
 
   const handleSubmitSchedules = async (data) => {
     setLoading(true);
     try {
-      await updateSchedules({ id: company.id, schedules: data });
       setSchedules(data);
-      toast.success(i18n.t("settings.schedulesSuccess"));
+      await updateSchedules({ id: company.id, schedules: data });
+      toast.success("Horários atualizados com sucesso.");
     } catch (e) {
-      toast.error(i18n.t("settings.schedulesError"));
-    } finally {
-      setLoading(false);
+      toast.error(e);
     }
+    setLoading(false);
   };
 
-  const isSuperUser = currentUser.super;
+  const isSuper = () => {
+    return currentUser.super;
+  };
 
   return (
     <MainContainer className={classes.root}>
@@ -118,18 +159,66 @@ const SettingsCustom = () => {
           value={tab}
           indicatorColor="primary"
           textColor="primary"
+          scrollButtons="on"
           variant="scrollable"
           onChange={handleTabChange}
           className={classes.tab}
         >
           <Tab label="Opções" value={"options"} />
           {schedulesEnabled && <Tab label="Horários" value={"schedules"} />}
-          {isSuperUser && <Tab label="Empresas" value={"companies"} />}
-          {isSuperUser && <Tab label="Planos" value={"plans"} />}
-          {isSuperUser && <Tab label="Ajuda" value={"helps"} />}
+          {isSuper() ? <Tab label="Empresas" value={"companies"} /> : null}
+          {isSuper() ? <Tab label="Planos" value={"plans"} /> : null}
+          {isSuper() ? <Tab label="Ajuda" value={"helps"} /> : null}
         </Tabs>
         <Paper className={classes.paper} elevation={0}>
-          <TabPanel value={tab} name="options">
+          <TabPanel
+            className={classes.container}
+            value={tab}
+            name={"schedules"}
+          >
+            <SchedulesForm
+              loading={loading}
+              onSubmit={handleSubmitSchedules}
+              initialValues={schedules}
+            />
+          </TabPanel>
+          <OnlyForSuperUser
+            user={currentUser}
+            yes={() => (
+              <TabPanel
+                className={classes.container}
+                value={tab}
+                name={"companies"}
+              >
+                <CompaniesManager />
+              </TabPanel>
+            )}
+          />
+          <OnlyForSuperUser
+            user={currentUser}
+            yes={() => (
+              <TabPanel
+                className={classes.container}
+                value={tab}
+                name={"plans"}
+              >
+                <PlansManager />
+              </TabPanel>
+            )}
+          />
+          <OnlyForSuperUser
+            user={currentUser}
+            yes={() => (
+              <TabPanel
+                className={classes.container}
+                value={tab}
+                name={"helps"}
+              >
+                <HelpsManager />
+              </TabPanel>
+            )}
+          />
+          <TabPanel className={classes.container} value={tab} name={"options"}>
             <Options
               settings={settings}
               scheduleTypeChanged={(value) =>
@@ -137,28 +226,6 @@ const SettingsCustom = () => {
               }
             />
           </TabPanel>
-          {schedulesEnabled && (
-            <TabPanel value={tab} name="schedules">
-              <SchedulesForm
-                loading={loading}
-                onSubmit={handleSubmitSchedules}
-                initialValues={schedules}
-              />
-            </TabPanel>
-          )}
-          {isSuperUser && (
-            <>
-              <TabPanel value={tab} name="companies">
-                <CompaniesManager />
-              </TabPanel>
-              <TabPanel value={tab} name="plans">
-                <PlansManager />
-              </TabPanel>
-              <TabPanel value={tab} name="helps">
-                <HelpsManager />
-              </TabPanel>
-            </>
-          )}
         </Paper>
       </Paper>
     </MainContainer>
