@@ -106,7 +106,7 @@ const Login = () => {
       Cookies.set("user_session", "active", { expires: 7 });
 
       // Redireciona o usuário após login bem-sucedido
-      history.push("/dashboard");
+      history.push("/tickets");
     } finally {
       setLoading(false);
     }
