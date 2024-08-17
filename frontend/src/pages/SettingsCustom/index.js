@@ -11,9 +11,10 @@ import HelpsManager from "../../components/HelpsManager";
 import Options from "../../components/Settings/Options";
 import { i18n } from "../../translate/i18n.js";
 import { toast } from "react-toastify";
-import useCompanies from "../../hooks/useCompanies.js";
+import Cookies from "js-cookie";
+import useCompanies from "../../hooks/useCompanies";
 import useAuth from "../../hooks/useAuth.js";
-import useSettings from "../../hooks/useSettings.js";
+import useSettings from "../../hooks/useSettings";
 import OnlyForSuperUser from "../../components/OnlyForSuperUser";
 
 const useStyles = makeStyles((theme) => ({
@@ -61,7 +62,7 @@ const SettingsCustom = () => {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const companyId = localStorage.getItem("companyId");
+      const companyId = Cookies.get("companyId");
       const [companyData, settingsData, userData] = await Promise.all([
         find(companyId),
         getAllSettings(),
