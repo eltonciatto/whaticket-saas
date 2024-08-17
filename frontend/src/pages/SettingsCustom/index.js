@@ -12,7 +12,7 @@ import Options from "../../components/Settings/Options";
 import { i18n } from "../../translate/i18n";
 import { toast } from "react-toastify";
 import useCompanies from "../../hooks/useCompanies";
-import useAuth from "../../hooks/useAuth";
+import useAuth from "../../hooks/useAuth.js";
 import useSettings from "../../hooks/useSettings";
 import OnlyForSuperUser from "../../components/OnlyForSuperUser";
 
