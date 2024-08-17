@@ -37,7 +37,7 @@ import { AuthContext } from "../../context/Auth/AuthContext";
 const reducer = (state, action) => {
   switch (action.type) {
     case "LOAD_FILES":
-      return [...state, ...action.payload];
+      return [...action.payload];
     case "UPDATE_FILES":
       return state.map((file) =>
         file.id === action.payload.id ? action.payload : file
@@ -75,15 +75,17 @@ const FileLists = () => {
   const socketManager = useContext(SocketContext);
 
   const fetchFileLists = useCallback(async () => {
+    setLoading(true);
     try {
       const { data } = await api.get("/files/", {
         params: { searchParam, pageNumber },
       });
       dispatch({ type: "LOAD_FILES", payload: data.files });
       setHasMore(data.hasMore);
-      setLoading(false);
     } catch (err) {
       toastError(err);
+    } finally {
+      setLoading(false);
     }
   }, [searchParam, pageNumber]);
 
@@ -93,7 +95,6 @@ const FileLists = () => {
   }, [searchParam]);
 
   useEffect(() => {
-    setLoading(true);
     const delayDebounceFn = setTimeout(() => {
       fetchFileLists();
     }, 500);
@@ -123,36 +124,34 @@ const FileLists = () => {
     setFileListModalOpen(true);
   };
 
-  const handleCloseFileListModal = () => {
+  const handleCloseFileListModal = useCallback(() => {
     setSelectedFileList(null);
     setFileListModalOpen(false);
-  };
+  }, []);
 
-  const handleSearch = (event) => {
+  const handleSearch = useCallback((event) => {
     setSearchParam(event.target.value.toLowerCase());
-  };
+  }, []);
 
-  const handleEditFileList = (fileList) => {
+  const handleEditFileList = useCallback((fileList) => {
     setSelectedFileList(fileList);
     setFileListModalOpen(true);
-  };
+  }, []);
 
-  const handleDeleteFileList = async (fileListId) => {
+  const handleDeleteFileList = useCallback(async (fileListId) => {
     try {
       await api.delete(`/files/${fileListId}`);
       toast.success(i18n.t("files.toasts.deleted"));
+      dispatch({ type: "DELETE_FILE", payload: fileListId });
     } catch (err) {
       toastError(err);
     }
     setDeletingFileList(null);
-    dispatch({ type: "RESET" });
-    setPageNumber(1);
-    fetchFileLists();
-  };
+  }, []);
 
-  const loadMore = () => {
+  const loadMore = useCallback(() => {
     setPageNumber((prevState) => prevState + 1);
-  };
+  }, []);
 
   const handleScroll = (e) => {
     if (!hasMore || loading) return;
@@ -169,7 +168,7 @@ const FileLists = () => {
           deletingFileList && `${i18n.t("files.confirmationModal.deleteTitle")}`
         }
         open={confirmModalOpen}
-        onClose={setConfirmModalOpen}
+        onClose={() => setConfirmModalOpen(false)}
         onConfirm={() => handleDeleteFileList(deletingFileList.id)}
       >
         {i18n.t("files.confirmationModal.deleteMessage")}
@@ -212,37 +211,33 @@ const FileLists = () => {
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell align="center">
-                {i18n.t("files.table.name")}
-              </TableCell>
+              <TableCell align="center">{i18n.t("files.table.name")}</TableCell>
               <TableCell align="center">
                 {i18n.t("files.table.actions")}
               </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            <>
-              {files.map((fileList) => (
-                <TableRow key={fileList.id}>
-                  <TableCell align="center">{fileList.name}</TableCell>
-                  <TableCell align="center">
-                    <IconButton size="small" onClick={() => handleEditFileList(fileList)}>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        setConfirmModalOpen(true);
-                        setDeletingFileList(fileList);
-                      }}
-                    >
-                      <DeleteOutlineIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {loading && <TableRowSkeleton columns={2} />}
-            </>
+            {files.map((fileList) => (
+              <TableRow key={fileList.id}>
+                <TableCell align="center">{fileList.name}</TableCell>
+                <TableCell align="center">
+                  <IconButton size="small" onClick={() => handleEditFileList(fileList)}>
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      setConfirmModalOpen(true);
+                      setDeletingFileList(fileList);
+                    }}
+                  >
+                    <DeleteOutlineIcon />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+            {loading && <TableRowSkeleton columns={2} />}
           </TableBody>
         </Table>
       </Paper>
