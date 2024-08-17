@@ -18,7 +18,6 @@ import toastError from "../../errors/toastError";
 import moment from "moment";
 import { SocketContext } from "../../context/Socket/SocketContext";
 import { AuthContext } from "../../context/Auth/AuthContext";
-import usePlans from "../../hooks/usePlans";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import "moment/locale/pt-br";
 import "react-big-calendar/lib/css/react-big-calendar.css";
@@ -26,23 +25,23 @@ import SearchIcon from "@material-ui/icons/Search";
 import DeleteOutlineIcon from "@material-ui/icons/DeleteOutline";
 import EditIcon from "@material-ui/icons/Edit";
 
-import "./Schedules.css"; // Importe o arquivo CSS
+import "./Schedules.css";
 
-// Defina a função getUrlParam antes de usá-la
-function getUrlParam(paramName) {
+const getUrlParam = (paramName) => {
   const searchParams = new URLSearchParams(window.location.search);
   return searchParams.get(paramName);
-}
+};
 
 const eventTitleStyle = {
-  fontSize: "14px", // Defina um tamanho de fonte menor
-  overflow: "hidden", // Oculte qualquer conteúdo excedente
-  whiteSpace: "nowrap", // Evite a quebra de linha do texto
-  textOverflow: "ellipsis", // Exiba "..." se o texto for muito longo
+  fontSize: "14px",
+  overflow: "hidden",
+  whiteSpace: "nowrap",
+  textOverflow: "ellipsis",
 };
 
 const localizer = momentLocalizer(moment);
-var defaultMessages = {
+
+const defaultMessages = {
   date: "Data",
   time: "Hora",
   event: "Evento",
@@ -58,38 +57,27 @@ var defaultMessages = {
   today: "Hoje",
   agenda: "Agenda",
   noEventsInRange: "Não há agendamentos no período.",
-  showMore: function showMore(total) {
-    return "+" + total + " mais";
-  }
+  showMore: (total) => `+${total} mais`,
 };
 
 const reducer = (state, action) => {
-  if (action.type === "LOAD_SCHEDULES") {
-    return [...state, ...action.payload];
+  switch (action.type) {
+    case "LOAD_SCHEDULES":
+      return [...state, ...action.payload];
+    case "UPDATE_SCHEDULES":
+      const scheduleIndex = state.findIndex((s) => s.id === action.payload.id);
+      if (scheduleIndex !== -1) {
+        state[scheduleIndex] = action.payload;
+        return [...state];
+      }
+      return [action.payload, ...state];
+    case "DELETE_SCHEDULE":
+      return state.filter((s) => s.id !== action.payload);
+    case "RESET":
+      return [];
+    default:
+      return state;
   }
-
-  if (action.type === "UPDATE_SCHEDULES") {
-    const schedule = action.payload;
-    const scheduleIndex = state.findIndex((s) => s.id === schedule.id);
-
-    if (scheduleIndex !== -1) {
-      state[scheduleIndex] = schedule;
-      return [...state];
-    } else {
-      return [schedule, ...state];
-    }
-  }
-
-  if (action.type === "DELETE_SCHEDULE") {
-    const scheduleId = action.payload;
-    return state.filter((s) => s.id !== scheduleId);
-  }
-
-  if (action.type === "RESET") {
-    return [];
-  }
-
-  return state;
 };
 
 const useStyles = makeStyles((theme) => ({
@@ -118,18 +106,18 @@ const Schedules = () => {
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const [contactId, setContactId] = useState(+getUrlParam("contactId"));
 
-
   const fetchSchedules = useCallback(async () => {
+    setLoading(true);
     try {
       const { data } = await api.get("/schedules/", {
         params: { searchParam, pageNumber },
       });
-
       dispatch({ type: "LOAD_SCHEDULES", payload: data.schedules });
       setHasMore(data.hasMore);
-      setLoading(false);
     } catch (err) {
       toastError(err);
+    } finally {
+      setLoading(false);
     }
   }, [searchParam, pageNumber]);
 
@@ -147,18 +135,11 @@ const Schedules = () => {
   }, [searchParam]);
 
   useEffect(() => {
-    setLoading(true);
     const delayDebounceFn = setTimeout(() => {
       fetchSchedules();
     }, 500);
     return () => clearTimeout(delayDebounceFn);
-  }, [
-    searchParam,
-    pageNumber,
-    contactId,
-    fetchSchedules,
-    handleOpenScheduleModalFromContactId,
-  ]);
+  }, [searchParam, pageNumber, contactId, fetchSchedules]);
 
   useEffect(() => {
     handleOpenScheduleModalFromContactId();
@@ -168,14 +149,13 @@ const Schedules = () => {
       if (data.action === "update" || data.action === "create") {
         dispatch({ type: "UPDATE_SCHEDULES", payload: data.schedule });
       }
-
       if (data.action === "delete") {
         dispatch({ type: "DELETE_SCHEDULE", payload: +data.scheduleId });
       }
     });
 
     return () => {
-      socket.disconnect();
+      socket.off(`company${user.companyId}-schedule`);
     };
   }, [handleOpenScheduleModalFromContactId, socketManager, user]);
 
@@ -183,19 +163,19 @@ const Schedules = () => {
     setContactId("");
   };
 
-  const handleOpenScheduleModal = () => {
+  const handleOpenScheduleModal = useCallback(() => {
     setSelectedSchedule(null);
     setScheduleModalOpen(true);
-  };
+  }, []);
 
-  const handleCloseScheduleModal = () => {
+  const handleCloseScheduleModal = useCallback(() => {
     setSelectedSchedule(null);
     setScheduleModalOpen(false);
-  };
+  }, []);
 
-  const handleSearch = (event) => {
+  const handleSearch = useCallback((event) => {
     setSearchParam(event.target.value.toLowerCase());
-  };
+  }, []);
 
   const handleEditSchedule = (schedule) => {
     setSelectedSchedule(schedule);
@@ -210,17 +190,14 @@ const Schedules = () => {
       toastError(err);
     }
     setDeletingSchedule(null);
-    setSearchParam("");
-    setPageNumber(1);
-
     dispatch({ type: "RESET" });
     setPageNumber(1);
-    await fetchSchedules();
+    fetchSchedules();
   };
 
-  const loadMore = () => {
-    setPageNumber((prevState) => prevState + 1);
-  };
+  const loadMore = useCallback(() => {
+    if (hasMore) setPageNumber((prev) => prev + 1);
+  }, [hasMore]);
 
   const handleScroll = (e) => {
     if (!hasMore || loading) return;
@@ -228,13 +205,6 @@ const Schedules = () => {
     if (scrollHeight - (scrollTop + 100) < clientHeight) {
       loadMore();
     }
-  };
-
-  const truncate = (str, len) => {
-    if (str.length > len) {
-      return str.substring(0, len) + "...";
-    }
-    return str;
   };
 
   return (
@@ -288,9 +258,9 @@ const Schedules = () => {
         <Calendar
           messages={defaultMessages}
           formats={{
-          agendaDateFormat: "DD/MM ddd",
-          weekdayFormat: "dddd"
-      }}
+            agendaDateFormat: "DD/MM ddd",
+            weekdayFormat: "dddd"
+          }}
           localizer={localizer}
           events={schedules.map((schedule) => ({
             title: (
@@ -301,10 +271,7 @@ const Schedules = () => {
                   className="delete-icon"
                 />
                 <EditIcon
-                  onClick={() => {
-                    handleEditSchedule(schedule);
-                    setScheduleModalOpen(true);
-                  }}
+                  onClick={() => handleEditSchedule(schedule)}
                   className="edit-icon"
                 />
               </div>
