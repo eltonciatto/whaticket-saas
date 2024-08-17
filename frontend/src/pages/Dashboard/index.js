@@ -88,6 +88,9 @@ const Dashboard = () => {
   const { find } = useDashboard();
   const { user } = useContext(AuthContext);
 
+  // Move o hook para o topo
+  const { count } = useContacts({});
+
   useEffect(() => {
     async function firstLoad() {
       await fetchData();
@@ -137,10 +140,9 @@ const Dashboard = () => {
     }));
   };
 
-  const GetContacts = useCallback(() => {
-    const { count } = useContacts({});
+  const GetContacts = () => {
     return count;
-  }, []);
+  };
 
   const formatTime = (minutes) => {
     return moment()
@@ -339,7 +341,7 @@ const Dashboard = () => {
                     Novos Contatos
                   </Typography>
                   <Typography component="h1" variant="h4">
-                    {GetContacts(true)}
+                    {GetContacts()}
                   </Typography>
                 </Grid>
                 <Grid item xs={4}>
