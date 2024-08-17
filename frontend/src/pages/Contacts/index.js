@@ -5,6 +5,7 @@ import { Tooltip, Avatar, Button, IconButton, Paper, TextField, InputAdornment, 
 import { makeStyles } from "@material-ui/core/styles";
 import { Search as SearchIcon, DeleteOutline as DeleteOutlineIcon, Edit as EditIcon, WhatsApp as WhatsAppIcon } from "@material-ui/icons";
 import { CSVLink } from "react-csv";
+import Cookies from "js-cookie";
 import api from "../../services/api";
 import TableRowSkeleton from "../../components/TableRowSkeleton";
 import ContactModal from "../../components/ContactModal";
@@ -89,7 +90,7 @@ const Contacts = () => {
   }, [searchParam, pageNumber]);
 
   useEffect(() => {
-    const companyId = localStorage.getItem("companyId");
+    const companyId = Cookies.get("companyId"); // Usando js-cookie para pegar o companyId
     const socket = socketManager.getSocket(companyId);
 
     socket.on(`company-${companyId}-contact`, (data) => {
