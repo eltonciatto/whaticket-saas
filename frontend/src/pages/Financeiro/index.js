@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer } from "react";
+import React, { useState, useEffect, useReducer, useCallback } from "react";
 import { toast } from "react-toastify";
 import { makeStyles } from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
@@ -62,7 +62,7 @@ const Invoices = () => {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [subscriptionModalOpen, setSubscriptionModalOpen] = useState(false);
 
-  const fetchInvoices = async () => {
+  const fetchInvoices = useCallback(async () => {
     setLoading(true);
     try {
       const { data } = await api.get("/invoices/all", {
@@ -75,7 +75,7 @@ const Invoices = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchParam, pageNumber]);
 
   useEffect(() => {
     dispatch({ type: "RESET" });
@@ -84,21 +84,21 @@ const Invoices = () => {
 
   useEffect(() => {
     fetchInvoices();
-  }, [searchParam, pageNumber]);
+  }, [searchParam, pageNumber, fetchInvoices]);
 
-  const handleOpenSubscriptionModal = (invoice) => {
+  const handleOpenSubscriptionModal = useCallback((invoice) => {
     setSelectedInvoice(invoice);
     setSubscriptionModalOpen(true);
-  };
+  }, []);
 
-  const handleCloseSubscriptionModal = () => {
+  const handleCloseSubscriptionModal = useCallback(() => {
     setSelectedInvoice(null);
     setSubscriptionModalOpen(false);
-  };
+  }, []);
 
-  const loadMore = () => {
+  const loadMore = useCallback(() => {
     if (hasMore) setPageNumber((prev) => prev + 1);
-  };
+  }, [hasMore]);
 
   const handleScroll = (e) => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
