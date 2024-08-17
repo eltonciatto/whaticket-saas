@@ -18,6 +18,7 @@ import Typography from "@material-ui/core/Typography";
 import api from '../../services/api';
 import { format } from 'date-fns';
 import { toast } from 'react-toastify';
+import Cookies from 'js-cookie'; // Importando o js-cookie
 import './button.css';
 
 ChartJS.register(
@@ -63,7 +64,7 @@ export const ChatsUser = () => {
     const [finalDate, setFinalDate] = useState(new Date());
     const [ticketsData, setTicketsData] = useState({ data: [] });
 
-    const companyId = localStorage.getItem("companyId");
+    const companyId = Cookies.get("companyId"); // Usando js-cookie para obter o companyId
 
     const handleGetTicketsInformation = useCallback(async () => {
         if (initialDate > finalDate) {
