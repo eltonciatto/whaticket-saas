@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
@@ -8,10 +8,8 @@ import Grid from '@material-ui/core/Grid';
 import StarIcon from '@material-ui/icons/StarBorder';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
-
-import IconButton from '@material-ui/core/IconButton';
-import MinimizeIcon from '@material-ui/icons/Minimize';
-import AddIcon from '@material-ui/icons/Add';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import Cookies from 'js-cookie'; // Substituindo localStorage por js-cookie
 
 import usePlans from "../../../hooks/usePlans";
 import useCompanies from "../../../hooks/useCompanies";
@@ -24,11 +22,6 @@ const useStyles = makeStyles((theme) => ({
       listStyle: 'none',
     },
   },
-  margin: {
-    margin: theme.spacing(1),
-  },
-
-
   cardHeader: {
     backgroundColor:
       theme.palette.type === 'light' ? theme.palette.grey[200] : theme.palette.grey[700],
@@ -39,30 +32,13 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'baseline',
     marginBottom: theme.spacing(2),
   },
-  footer: {
-    borderTop: `1px solid ${theme.palette.divider}`,
-    marginTop: theme.spacing(8),
-    paddingTop: theme.spacing(3),
-    paddingBottom: theme.spacing(3),
-    [theme.breakpoints.up('sm')]: {
-      paddingTop: theme.spacing(6),
-      paddingBottom: theme.spacing(6),
-    },
-  },
-
   customCard: {
     display: "flex",
     marginTop: "16px",
     alignItems: "center",
     flexDirection: "column",
   },
-  custom: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-  }
 }));
-
 
 export default function Pricing(props) {
   const {
@@ -71,128 +47,88 @@ export default function Pricing(props) {
     activeStep,
   } = props;
 
-  const handleChangeAdd = (event, newValue) => {
-    if (newValue < 3) return
-
-    const newPrice = 11.00;
-
-    setUsersPlans(newValue);
-    setCustomValuePlans(customValuePlans + newPrice);
-  }
-
-  const handleChangeMin = (event, newValue) => {
-    if (newValue < 3) return
-
-    const newPrice = 11;
-
-    setUsersPlans(newValue);
-    setCustomValuePlans(customValuePlans - newPrice);
-  }
-
-  const handleChangeConnectionsAdd = (event, newValue) => {
-    if (newValue < 3) return
-    const newPrice = 20.00;
-    setConnectionsPlans(newValue);
-    setCustomValuePlans(customValuePlans + newPrice);
-  }
-
-  const handleChangeConnectionsMin = (event, newValue) => {
-    if (newValue < 3) return
-    const newPrice = 20;
-    setConnectionsPlans(newValue);
-    setCustomValuePlans(customValuePlans - newPrice);
-  }
-
   const { list, finder } = usePlans();
   const { find } = useCompanies();
 
   const classes = useStyles();
-  const [usersPlans, setUsersPlans] = React.useState(3);
-  const [companiesPlans, setCompaniesPlans] = useState(0);
-  const [connectionsPlans, setConnectionsPlans] = React.useState(3);
-  const [storagePlans, setStoragePlans] = React.useState([]);
-  const [customValuePlans, setCustomValuePlans] = React.useState(49.00);
-  const [loading, setLoading] = React.useState(false);
-  const companyId = localStorage.getItem("companyId");
+  const [usersPlans, setUsersPlans] = useState(3);
+  const [companiesPlans, setCompaniesPlans] = useState(null); // Verifica se está carregando planos
+  const [connectionsPlans, setConnectionsPlans] = useState(3);
+  const [storagePlans, setStoragePlans] = useState([]);
+  const [customValuePlans, setCustomValuePlans] = useState(49.00);
+  const [loading, setLoading] = useState(false);
+  const companyId = Cookies.get("companyId"); // Usando js-cookie para obter o companyId
 
   useEffect(() => {
-    async function fetchData() {
-      await loadCompanies();
-    }
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const companiesList = await find(companyId);
+        if (companiesList) {
+          setCompaniesPlans(companiesList.planId);
+          await loadPlans(companiesList.planId);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar dados da empresa:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchData();
-  }, [])
+  }, [companyId, find]);
 
-  const loadCompanies = async () => {
-    setLoading(true);
-    try {
-      const companiesList = await find(companyId);
-      setCompaniesPlans(companiesList.planId);
-      await loadPlans(companiesList.planId);
-    } catch (e) {
-      console.log(e);
-      // toast.error("Não foi possível carregar a lista de registros");
-    }
-    setLoading(false);
-  };
   const loadPlans = async (companiesPlans) => {
     setLoading(true);
     try {
       const plansCompanies = await finder(companiesPlans);
-      const plans = []
-
-      //plansCompanies.forEach((plan) => {
-      plans.push({
-        title: plansCompanies.name,
-        planId: plansCompanies.id,
-        price: plansCompanies.value,
-        description: [
-          `${plansCompanies.users} Usuários`,
-          `${plansCompanies.connections} Conexão`,
-          `${plansCompanies.queues} Filas`
-        ],
-        users: plansCompanies.users,
-        connections: plansCompanies.connections,
-        queues: plansCompanies.queues,
-        buttonText: 'SELECIONAR',
-        buttonVariant: 'outlined',
-      })
-
-      // setStoragePlans(data);
-      //});
-      setStoragePlans(plans);
-    } catch (e) {
-      console.log(e);
-      // toast.error("Não foi possível carregar a lista de registros");
+      if (plansCompanies) {
+        const plans = [{
+          title: plansCompanies.name,
+          planId: plansCompanies.id,
+          price: plansCompanies.value,
+          description: [
+            `${plansCompanies.users} Usuários`,
+            `${plansCompanies.connections} Conexão`,
+            `${plansCompanies.queues} Filas`
+          ],
+          users: plansCompanies.users,
+          connections: plansCompanies.connections,
+          queues: plansCompanies.queues,
+          buttonText: 'SELECIONAR',
+          buttonVariant: 'outlined',
+        }];
+        setStoragePlans(plans);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar planos:", error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
+  if (loading) {
+    return <CircularProgress />;
+  }
 
-  const tiers = storagePlans
+  if (!storagePlans.length) {
+    return <Typography variant="h6" align="center">Nenhum plano disponível no momento.</Typography>;
+  }
+
   return (
     <React.Fragment>
       <Grid container spacing={3}>
-        {tiers.map((tier) => (
-          // Enterprise card is full width at sm breakpoint
-          <Grid item key={tier.title} xs={12} sm={tier.title === 'Enterprise' ? 12 : 12} md={12}>
+        {storagePlans.map((tier) => (
+          <Grid item key={tier.title} xs={12} sm={12} md={12}>
             <Card>
               <CardHeader
                 title={tier.title}
-                subheader={tier.subheader}
                 titleTypographyProps={{ align: 'center' }}
-                subheaderTypographyProps={{ align: 'center' }}
-                action={tier.title === 'Pro' ? <StarIcon /> : null}
                 className={classes.cardHeader}
               />
               <CardContent>
                 <div className={classes.cardPricing}>
                   <Typography component="h2" variant="h3" color="textPrimary">
-                    {
-
-                      <React.Fragment>
-                        R${tier.price.toLocaleString('pt-br', { minimumFractionDigits: 2 })}
-                      </React.Fragment>
-                    }
+                    R${tier.price.toLocaleString('pt-br', { minimumFractionDigits: 2 })}
                   </Typography>
                   <Typography variant="h6" color="textSecondary">
                     /mês
@@ -212,18 +148,9 @@ export default function Pricing(props) {
                   variant={tier.buttonVariant}
                   color="primary"
                   onClick={() => {
-                    if (tier.custom) {
-                      setFieldValue("plan", JSON.stringify({
-                        users: usersPlans,
-                        connections: connectionsPlans,
-                        price: customValuePlans,
-                      }));
-                    } else {
-                      setFieldValue("plan", JSON.stringify(tier));
-                    }
+                    setFieldValue("plan", JSON.stringify(tier));
                     setActiveStep(activeStep + 1);
-                  }
-                  }
+                  }}
                 >
                   {tier.buttonText}
                 </Button>
