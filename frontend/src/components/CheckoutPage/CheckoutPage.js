@@ -19,50 +19,45 @@ import toastError from "../../errors/toastError";
 import { toast } from "react-toastify";
 import { AuthContext } from "../../context/Auth/AuthContext";
 
-
 import validationSchema from "./FormModel/validationSchema";
 import checkoutFormModel from "./FormModel/checkoutFormModel";
 import formInitialValues from "./FormModel/formInitialValues";
 
 import useStyles from "./styles";
-import Invoices from "../../pages/Financeiro";
-
 
 export default function CheckoutPage(props) {
   const steps = ["Dados", "Personalizar", "Revisar"];
   const { formId, formField } = checkoutFormModel;
   
-  
-  
   const classes = useStyles();
   const [activeStep, setActiveStep] = useState(1);
   const [datePayment, setDatePayment] = useState(null);
-  const [invoiceId, setinvoiceId] = useState(props.Invoice.id);
+  const [invoiceId, setInvoiceId] = useState(props.invoice?.id || ""); // Certifique-se de que o invoice está sendo passado corretamente
   const currentValidationSchema = validationSchema[activeStep];
   const isLastStep = activeStep === steps.length - 1;
   const { user } = useContext(AuthContext);
 
-function _renderStepContent(step, setFieldValue, setActiveStep, values ) {
-
-  switch (step) {
-    case 0:
-      return <AddressForm formField={formField} values={values} setFieldValue={setFieldValue}  />;
-    case 1:
-      return <PaymentForm 
-      formField={formField} 
-      setFieldValue={setFieldValue} 
-      setActiveStep={setActiveStep} 
-      activeStep={step} 
-      invoiceId={invoiceId}
-      values={values}
-      />;
-    case 2:
-      return <ReviewOrder />;
-    default:
-      return <div>Not Found</div>;
+  function _renderStepContent(step, setFieldValue, setActiveStep, values ) {
+    switch (step) {
+      case 0:
+        return <AddressForm formField={formField} values={values} setFieldValue={setFieldValue}  />;
+      case 1:
+        return (
+          <PaymentForm 
+            formField={formField} 
+            setFieldValue={setFieldValue} 
+            setActiveStep={setActiveStep} 
+            activeStep={step} 
+            invoiceId={invoiceId}
+            values={values}
+          />
+        );
+      case 2:
+        return <ReviewOrder />;
+      default:
+        return <div>Not Found</div>;
+    }
   }
-}
-
 
   async function _submitForm(values, actions) {
     try {
@@ -87,10 +82,10 @@ function _renderStepContent(step, setFieldValue, setActiveStep, values ) {
       }
 
       const { data } = await api.post("/subscription", newValues);
-      setDatePayment(data)
+      setDatePayment(data);
       actions.setSubmitting(false);
       setActiveStep(activeStep + 1);
-      toast.success("Assinatura realizada com sucesso!, aguardando a realização do pagamento");
+      toast.success("Assinatura realizada com sucesso! Aguardando a realização do pagamento.");
     } catch (err) {
       toastError(err);
     }
