@@ -50,7 +50,7 @@ const SubscriptionModal = ({ open, onClose, invoice }) => {
     <div className={classes.root}>
       <Dialog open={open} onClose={handleClose} maxWidth="md" scroll="paper">
         <DialogContent dividers>
-          {invoice ? (
+          {invoice && invoice.id ? (
             <CheckoutPage invoice={invoice} />
           ) : (
             <div>
