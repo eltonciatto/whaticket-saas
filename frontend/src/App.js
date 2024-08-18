@@ -51,15 +51,15 @@ const App = () => {
       },
       palette: {
         type: mode,
-        primary: { main: mode === "light" ? "#012489" : "#017ACC" },
-        textPrimary: mode === "light" ? "#012489" : "#E0E0E0", // Melhor contraste no dark mode
-        borderPrimary: mode === "light" ? "#012489" : "#017ACC",
+        primary: { main: "#012489" }, // Mantendo o azul padrão em ambos os temas
+        textPrimary: mode === "light" ? "#FFFFFF" : "#E0E0E0", // Ajuste: texto branco para fundo azul no light mode
+        borderPrimary: "#012489", // Azul padrão para bordas em ambos os temas
         dark: { main: mode === "light" ? "#1A1A1A" : "#121212" },
         light: { main: mode === "light" ? "#F3F3F3" : "#2B2B2B" },
         tabHeaderBackground: mode === "light" ? "#E5E5E5" : "#2B2B2B", // Cores mais escuras para headers no dark mode
         optionsBackground: mode === "light" ? "#F7F7F7" : "#333333",
-        options: mode === "light" ? "#012489" : "#017ACC",
-        fontecor: mode === "light" ? "#012489" : "#FFFFFF",
+        options: "#012489", // Azul padrão para ambos os temas
+        fontecor: mode === "light" ? "#FFFFFF" : "#FFFFFF", // Ajuste: cor branca para fundo azul
         fancyBackground: mode === "light" ? "#F7F7F7" : "#333333",
         bordabox: mode === "light" ? "#E0E0E0" : "#555555", // Ajuste no dark mode
         newmessagebox: mode === "light" ? "#F3F3F3" : "#555555",
@@ -74,7 +74,7 @@ const App = () => {
         total: mode === "light" ? "#FFFFFF" : "#1A1A1A",
         messageIcons: mode === "light" ? "#A0A0A0" : "#CCCCCC", // Melhor contraste no dark mode
         inputBackground: mode === "light" ? "#FFFFFF" : "#2D2D2D",
-        barraSuperior: mode === "light" ? "linear-gradient(to right, #012489, #012489)" : "#017ACC",
+        barraSuperior: mode === "light" ? "linear-gradient(to right, #012489, #012489)" : "#012489", // Azul padrão para ambos os temas
         boxticket: mode === "light" ? "#EDEDED" : "#555555", // Ajuste no dark mode
         campaigntab: mode === "light" ? "#EDEDED" : "#555555",
         mediainput: mode === "light" ? "#EDEDED" : "#1A1A1A",
