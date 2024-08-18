@@ -7,6 +7,7 @@ import { FaCopy, FaCheckCircle } from 'react-icons/fa';
 import { SocketContext } from "../../../context/Socket/SocketContext";
 import { useDate } from "../../../hooks/useDate";
 import { toast } from "react-toastify";
+import Cookies from 'js-cookie';
 
 function CheckoutSuccess(props) {
 
@@ -20,11 +21,16 @@ function CheckoutSuccess(props) {
   const socketManager = useContext(SocketContext);
 
   useEffect(() => {
-    const companyId = localStorage.getItem("companyId");
+    const companyId = Cookies.get("companyId");
+    if (!companyId) {
+      toast.error("ID da empresa não encontrado. Por favor, faça login novamente.");
+      history.push("/login");
+      return;
+    }
+
     const socket = socketManager.getSocket(companyId);
     
     socket.on(`company-${companyId}-payment`, (data) => {
-
       if (data.action === "CONCLUIDA") {
         toast.success(`Sua licença foi renovada até ${dateToClient(data.company.dueDate)}!`);
         setTimeout(() => {
@@ -32,12 +38,16 @@ function CheckoutSuccess(props) {
         }, 4000);
       }
     });
-  }, [history, socketManager]);
+
+    return () => {
+      socket.off(`company-${companyId}-payment`);
+    };
+  }, [history, socketManager, dateToClient]);
 
   const handleCopyQR = () => {
     setTimeout(() => {
       setCopied(false);
-    }, 1 * 1000);
+    }, 1000);
     setCopied(true);
   };
 
