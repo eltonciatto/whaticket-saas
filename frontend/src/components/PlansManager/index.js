@@ -18,13 +18,11 @@ import {
 import { Formik, Form, Field } from 'formik';
 import ButtonWithSpinner from "../ButtonWithSpinner";
 import ConfirmationModal from "../ConfirmationModal";
-
 import { Edit as EditIcon } from "@material-ui/icons";
-
 import { toast } from "react-toastify";
 import usePlans from "../../hooks/usePlans";
 import { i18n } from "../../translate/i18n";
-
+import Cookies from "js-cookie";
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -65,7 +63,7 @@ const useStyles = makeStyles(theme => ({
 
 export function PlanManagerForm(props) {
     const { onSubmit, onDelete, onCancel, initialValue, loading } = props;
-    const classes = useStyles()
+    const classes = useStyles();
 
     const [record, setRecord] = useState({
         name: '',
@@ -83,12 +81,12 @@ export function PlanManagerForm(props) {
     });
 
     useEffect(() => {
-        setRecord(initialValue)
-    }, [initialValue])
+        setRecord(initialValue);
+    }, [initialValue]);
 
     const handleSubmit = async (data) => {
-        onSubmit(data)
-    }
+        onSubmit(data);
+    };
 
     return (
         <Formik
@@ -97,8 +95,8 @@ export function PlanManagerForm(props) {
             initialValues={record}
             onSubmit={(values, { resetForm }) =>
                 setTimeout(() => {
-                    handleSubmit(values)
-                    resetForm()
+                    handleSubmit(values);
+                    resetForm();
                 }, 500)
             }
         >
@@ -266,7 +264,7 @@ export function PlanManagerForm(props) {
                                 <Field
                                     as={Select}
                                     id="useOpenAi-selection"
-                                    label="Talk.Ai"
+                                    label="Open.Ai"
                                     labelId="useOpenAi-selection-label"
                                     name="useOpenAi"
                                     margin="dense"
@@ -277,7 +275,7 @@ export function PlanManagerForm(props) {
                             </FormControl>
                         </Grid>
 
-                        {/* INTEGRACOES */}
+                        {/* INTEGRAÇÕES */}
                         <Grid xs={12} sm={8} md={2} item>
                             <FormControl margin="dense" variant="outlined" fullWidth>
                                 <InputLabel htmlFor="useIntegrations-selection">Integrações</InputLabel>
@@ -296,7 +294,6 @@ export function PlanManagerForm(props) {
                         </Grid>
                     </Grid>
                     <Grid spacing={2} justifyContent="flex-end" container>
-
                         <Grid sm={3} md={2} item>
                             <ButtonWithSpinner className={classes.fullWidth} loading={loading} onClick={() => onCancel()} variant="contained">
                                 {i18n.t("plans.form.clear")}
@@ -318,12 +315,12 @@ export function PlanManagerForm(props) {
                 </Form>
             )}
         </Formik>
-    )
+    );
 }
 
 export function PlansManagerGrid(props) {
-    const { records, onSelect } = props
-    const classes = useStyles()
+    const { records, onSelect } = props;
+    const classes = useStyles();
     
     const renderCampaigns = (row) => {
         return row.useCampaigns === false ? `${i18n.t("plans.form.no")}` : `${i18n.t("plans.form.yes")}`;
@@ -355,12 +352,7 @@ export function PlansManagerGrid(props) {
 
     return (
         <Paper className={classes.tableContainer}>
-            <Table
-                className={classes.fullWidth}
-                // size="small"
-                padding="none"
-                aria-label="a dense table"
-            >
+            <Table className={classes.fullWidth} padding="none" aria-label="a dense table">
                 <TableHead>
                     <TableRow>
                         <TableCell align="center" style={{ width: '1%' }}>#</TableCell>
@@ -403,16 +395,16 @@ export function PlansManagerGrid(props) {
                 </TableBody>
             </Table>
         </Paper>
-    )
+    );
 }
 
 export default function PlansManager() {
-    const classes = useStyles()
-    const { list, save, update, remove } = usePlans()
+    const classes = useStyles();
+    const { list, save, update, remove } = usePlans();
 
-    const [showConfirmDialog, setShowConfirmDialog] = useState(false)
-    const [loading, setLoading] = useState(false)
-    const [records, setRecords] = useState([])
+    const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [records, setRecords] = useState([]);
     const [record, setRecord] = useState({
         name: '',
         users: 0,
@@ -426,61 +418,59 @@ export default function PlansManager() {
         useKanban: true,
         useOpenAi: true,
         useIntegrations: true,
-    })
+    });
 
     useEffect(() => {
         async function fetchData() {
-            await loadPlans()
+            await loadPlans();
         }
-        fetchData()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [record])
+        fetchData();
+    }, []);
 
     const loadPlans = async () => {
-        setLoading(true)
+        setLoading(true);
         try {
-            const planList = await list()
-            setRecords(planList)
+            const planList = await list();
+            setRecords(planList);
         } catch (e) {
-            toast.error('Não foi possível carregar a lista de registros')
+            toast.error('Não foi possível carregar a lista de registros');
         }
-        setLoading(false)
-    }
+        setLoading(false);
+    };
 
     const handleSubmit = async (data) => {
-        setLoading(true)
-        console.log(data)
+        setLoading(true);
         try {
             if (data.id !== undefined) {
-                await update(data)
+                await update(data);
             } else {
-                await save(data)
+                await save(data);
             }
-            await loadPlans()
-            handleCancel()
-            toast.success('Operação realizada com sucesso!')
+            await loadPlans();
+            handleCancel();
+            toast.success('Operação realizada com sucesso!');
         } catch (e) {
-            toast.error('Não foi possível realizar a operação. Verifique se já existe uma plano com o mesmo nome ou se os campos foram preenchidos corretamente')
+            toast.error('Não foi possível realizar a operação. Verifique se já existe um plano com o mesmo nome ou se os campos foram preenchidos corretamente');
         }
-        setLoading(false)
-    }
+        setLoading(false);
+    };
 
     const handleDelete = async () => {
-        setLoading(true)
+        setLoading(true);
         try {
-            await remove(record.id)
-            await loadPlans()
-            handleCancel()
-            toast.success('Operação realizada com sucesso!')
+            await remove(record.id);
+            await loadPlans();
+            handleCancel();
+            toast.success('Operação realizada com sucesso!');
         } catch (e) {
-            toast.error('Não foi possível realizar a operação')
+            toast.error('Não foi possível realizar a operação');
         }
-        setLoading(false)
-    }
+        setLoading(false);
+    };
 
     const handleOpenDeleteDialog = () => {
-        setShowConfirmDialog(true)
-    }
+        setShowConfirmDialog(true);
+    };
 
     const handleCancel = () => {
         setRecord({
@@ -496,19 +486,18 @@ export default function PlansManager() {
             useExternalApi: true,
             useKanban: true,
             useOpenAi: true,
-            useIntegrations: true
-        })
-    }
+            useIntegrations: true,
+        });
+    };
 
     const handleSelect = (data) => {
-
-        let useCampaigns = data.useCampaigns === false ? false : true
-        let useSchedules = data.useSchedules === false ? false : true
-        let useInternalChat = data.useInternalChat === false ? false : true
-        let useExternalApi = data.useExternalApi === false ? false : true
-        let useKanban = data.useKanban === false ? false : true
-        let useOpenAi = data.useOpenAi === false ? false : true
-        let useIntegrations = data.useIntegrations === false ? false : true
+        let useCampaigns = data.useCampaigns === false ? false : true;
+        let useSchedules = data.useSchedules === false ? false : true;
+        let useInternalChat = data.useInternalChat === false ? false : true;
+        let useExternalApi = data.useExternalApi === false ? false : true;
+        let useKanban = data.useKanban === false ? false : true;
+        let useOpenAi = data.useOpenAi === false ? false : true;
+        let useIntegrations = data.useIntegrations === false ? false : true;
 
         setRecord({
             id: data.id,
@@ -524,8 +513,8 @@ export default function PlansManager() {
             useKanban,
             useOpenAi,
             useIntegrations
-        })
-    }
+        });
+    };
 
     return (
         <Paper className={classes.mainPaper} elevation={0}>
@@ -555,5 +544,5 @@ export default function PlansManager() {
                 Deseja realmente excluir esse registro?
             </ConfirmationModal>
         </Paper>
-    )
+    );
 }
