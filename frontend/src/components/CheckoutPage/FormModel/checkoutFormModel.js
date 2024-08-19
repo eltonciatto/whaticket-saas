@@ -12,7 +12,7 @@ export default {
       requiredErrorMsg: 'O sobrenome é obrigatório'
     },
     address1: {
-      name: 'address2',
+      name: 'address1', 
       label: 'Endereço*',
       requiredErrorMsg: 'O endereço é obrigatório'
     },
