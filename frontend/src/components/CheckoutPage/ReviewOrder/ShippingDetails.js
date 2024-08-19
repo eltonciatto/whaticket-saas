@@ -7,8 +7,17 @@ function ShippingDetails(props) {
   const classes = useStyles();
   const { plan } = formValues;
 
-  const newPlan = JSON.parse(plan);
-  const { users, connections, price } = newPlan;
+  // Parse seguro do JSON com fallback
+  let newPlan;
+  try {
+    newPlan = plan ? JSON.parse(plan) : {};
+  } catch (error) {
+    console.error("Erro ao parsear o plano:", error);
+    newPlan = {};
+  }
+
+  // Definindo valores padrão para evitar undefined
+  const { users = 0, connections = 0, price = 0 } = newPlan;
 
   return (
     <Grid item xs={12} sm={12}>
