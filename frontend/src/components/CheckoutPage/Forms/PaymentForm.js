@@ -46,11 +46,12 @@ export default function Pricing(props) {
     activeStep,
   } = props;
 
-  const { list } = usePlans();
+  const { finder } = usePlans();
   const { find } = useCompanies();
 
   const classes = useStyles();
   const [storagePlans, setStoragePlans] = useState(() => {
+    // Carregando os planos do cookie ao inicializar
     const savedPlans = Cookies.get("storagePlans");
     return savedPlans ? JSON.parse(savedPlans) : [];
   });
@@ -59,46 +60,63 @@ export default function Pricing(props) {
   const [dataCarregada, setDataCarregada] = useState(false);
 
   useEffect(() => {
-    if (dataCarregada) return;
+    if (!companyId || dataCarregada) return;
 
     const fetchData = async () => {
       setLoading(true);
       try {
         console.log("Carregando dados da empresa com ID:", companyId);
-        const plans = await list(); // Buscando todos os planos disponíveis
-        if (plans && plans.length > 0) {
-          const formattedPlans = plans.map(plan => ({
-            title: plan.name,
-            planId: plan.id,
-            price: plan.value,
-            description: [
-              `${plan.users} Usuários`,
-              `${plan.connections} Conexão`,
-              `${plan.queues} Filas`
-            ],
-            users: plan.users,
-            connections: plan.connections,
-            queues: plan.queues,
-            buttonText: 'SELECIONAR',
-            buttonVariant: 'outlined',
-          }));
-
-          // Armazenando os planos no cookie
-          Cookies.set("storagePlans", JSON.stringify(formattedPlans), { expires: 1 });
-          setStoragePlans(formattedPlans);
+        const companiesList = await find(companyId);
+        console.log("Dados da empresa carregados:", companiesList);
+        if (companiesList && companiesList.planId) {
+          await loadPlans(companiesList.planId);
+          setDataCarregada(true);
         } else {
-          console.error("Erro: Nenhum plano encontrado.");
+          console.error("Erro: planId não foi encontrado para a empresa.");
         }
       } catch (error) {
-        console.error("Erro ao carregar os planos:", error);
+        console.error("Erro ao carregar dados da empresa:", error);
       } finally {
         setLoading(false);
-        setDataCarregada(true);
       }
     };
 
     fetchData();
-  }, [companyId, list, dataCarregada]);
+  }, [companyId, find, dataCarregada]);
+
+  const loadPlans = async (planId) => {
+    setLoading(true);
+    try {
+      const plansCompanies = await finder(planId);
+      if (plansCompanies) {
+        const plans = [{
+          title: plansCompanies.name,
+          planId: plansCompanies.id,
+          price: plansCompanies.value,
+          description: [
+            ${plansCompanies.users} Usuários,
+            ${plansCompanies.connections} Conexão,
+            ${plansCompanies.queues} Filas
+          ],
+          users: plansCompanies.users,
+          connections: plansCompanies.connections,
+          queues: plansCompanies.queues,
+          buttonText: 'SELECIONAR',
+          buttonVariant: 'outlined',
+        }];
+
+        // Armazenando os planos no cookie
+        Cookies.set("storagePlans", JSON.stringify(plans), { expires: 1 }); // Expira em 1 dia
+        setStoragePlans(plans);
+      } else {
+        console.error("Erro: Nenhum plano encontrado.");
+      }
+    } catch (error) {
+      console.error("Erro ao carregar planos:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (
