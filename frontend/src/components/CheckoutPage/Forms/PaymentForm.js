@@ -1,4 +1,3 @@
-import { toast } from 'react-toastify';
 import React, { useState, useEffect } from 'react';
 import Button from '@material-ui/core/Button';
 import Card from '@material-ui/core/Card';
@@ -13,7 +12,6 @@ import Cookies from 'js-cookie'; // Usando js-cookie
 
 import usePlans from "../../../hooks/usePlans";
 import useCompanies from "../../../hooks/useCompanies";
-import api from "../../../services/api"; // Importando a API para fazer a atualização do planId
 
 const useStyles = makeStyles((theme) => ({
   '@global': {
@@ -102,22 +100,6 @@ export default function Pricing(props) {
     fetchData();
   }, [companyId, list, dataCarregada]);
 
-  const handlePlanSelection = async (tier) => {
-    try {
-      setLoading(true);
-      // Atualizando o planId da empresa via API
-      await api.put(`/companies/${companyId}`, { planId: tier.planId });
-      setFieldValue("plan", JSON.stringify(tier));
-      setActiveStep(activeStep + 1);
-      toast.success("Plano alterado com sucesso!");
-    } catch (error) {
-      console.error("Erro ao atualizar o planId:", error);
-      toast.error("Não foi possível alterar o plano. Tente novamente.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   if (loading) {
     return (
       <div style={{ textAlign: "center", marginTop: "20px" }}>
@@ -168,7 +150,10 @@ export default function Pricing(props) {
                   fullWidth
                   variant={tier.buttonVariant}
                   color="primary"
-                  onClick={() => handlePlanSelection(tier)}
+                  onClick={() => {
+                    setFieldValue("plan", JSON.stringify(tier));
+                    setActiveStep(activeStep + 1);
+                  }}
                 >
                   {tier.buttonText}
                 </Button>
