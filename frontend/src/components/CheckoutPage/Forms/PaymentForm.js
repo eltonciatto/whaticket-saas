@@ -8,7 +8,7 @@ import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import Cookies from 'js-cookie';
+import Cookies from 'js-cookie'; // Usando js-cookie
 
 import usePlans from "../../../hooks/usePlans";
 import useCompanies from "../../../hooks/useCompanies";
@@ -50,7 +50,11 @@ export default function Pricing(props) {
   const { find } = useCompanies();
 
   const classes = useStyles();
-  const [storagePlans, setStoragePlans] = useState([]);
+  const [storagePlans, setStoragePlans] = useState(() => {
+    // Carregando os planos do cookie ao inicializar
+    const savedPlans = Cookies.get("storagePlans");
+    return savedPlans ? JSON.parse(savedPlans) : [];
+  });
   const [loading, setLoading] = useState(false);
   const companyId = Cookies.get("companyId");
   const [dataCarregada, setDataCarregada] = useState(false);
@@ -100,6 +104,9 @@ export default function Pricing(props) {
           buttonText: 'SELECIONAR',
           buttonVariant: 'outlined',
         }];
+
+        // Armazenando os planos no cookie
+        Cookies.set("storagePlans", JSON.stringify(plans), { expires: 1 }); // Expira em 1 dia
         setStoragePlans(plans);
       } else {
         console.error("Erro: Nenhum plano encontrado.");
