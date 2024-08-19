@@ -5,11 +5,10 @@ import CardActions from '@material-ui/core/CardActions';
 import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import Grid from '@material-ui/core/Grid';
-import StarIcon from '@material-ui/icons/StarBorder';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import Cookies from 'js-cookie'; // Substituindo localStorage por js-cookie
+import Cookies from 'js-cookie';
 
 import usePlans from "../../../hooks/usePlans";
 import useCompanies from "../../../hooks/useCompanies";
@@ -47,45 +46,39 @@ export default function Pricing(props) {
     activeStep,
   } = props;
 
-  const { list, finder } = usePlans();
+  const { finder } = usePlans();
   const { find } = useCompanies();
 
   const classes = useStyles();
-  const [usersPlans, setUsersPlans] = useState(3);
-  const [companiesPlans, setCompaniesPlans] = useState(null); // Verifica se está carregando planos
-  const [connectionsPlans, setConnectionsPlans] = useState(3);
   const [storagePlans, setStoragePlans] = useState([]);
-  const [customValuePlans, setCustomValuePlans] = useState(49.00);
   const [loading, setLoading] = useState(false);
-  const companyId = Cookies.get("companyId"); // Usando js-cookie para obter o companyId
+  const companyId = Cookies.get("companyId");
+  const [dataCarregada, setDataCarregada] = useState(false);
 
   useEffect(() => {
-  if (!companyId) {
-    console.error("Erro: companyId está nulo ou indefinido. Verifique se o usuário está logado corretamente.");
-    return;
-  }
+    if (!companyId || dataCarregada) return;
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      console.log("Carregando dados da empresa com ID:", companyId);
-      const companiesList = await find(companyId);
-      console.log("Dados da empresa carregados:", companiesList);
-      if (companiesList && companiesList.planId) {
-        setCompaniesPlans(companiesList.planId);
-        await loadPlans(companiesList.planId);
-      } else {
-        console.error("Erro: planId não foi encontrado para a empresa.");
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        console.log("Carregando dados da empresa com ID:", companyId);
+        const companiesList = await find(companyId);
+        console.log("Dados da empresa carregados:", companiesList);
+        if (companiesList && companiesList.planId) {
+          await loadPlans(companiesList.planId);
+          setDataCarregada(true);
+        } else {
+          console.error("Erro: planId não foi encontrado para a empresa.");
+        }
+      } catch (error) {
+        console.error("Erro ao carregar dados da empresa:", error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Erro ao carregar dados da empresa:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-  fetchData();
-}, [companyId, find]);
+    };
 
+    fetchData();
+  }, [companyId, find, dataCarregada]);
 
   const loadPlans = async (planId) => {
     setLoading(true);
@@ -119,11 +112,20 @@ export default function Pricing(props) {
   };
 
   if (loading) {
-    return <CircularProgress />;
+    return (
+      <div style={{ textAlign: "center", marginTop: "20px" }}>
+        <CircularProgress />
+        <Typography variant="h6">Carregando planos...</Typography>
+      </div>
+    );
   }
 
   if (!storagePlans.length) {
-    return <Typography variant="h6" align="center">Nenhum plano disponível no momento.</Typography>;
+    return (
+      <Typography variant="h6" align="center" color="error">
+        Nenhum plano disponível no momento. Entre em contato com o suporte.
+      </Typography>
+    );
   }
 
   return (
