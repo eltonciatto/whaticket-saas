@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Grid, Typography, Button } from "@material-ui/core";
+import { Grid, Typography } from "@material-ui/core";
 import { InputField, SelectField } from "../../FormFields";
 import { AuthContext } from "../../../context/Auth/AuthContext";
 import { toast } from "react-toastify";
@@ -44,15 +44,6 @@ export default function AddressForm(props) {
       return zipCode.replace(/(\d{5})(\d{3})/, "$1-$2");
     }
     return zipCode;
-  };
-
-  const handleNextStep = () => {
-    setHasTriedToProceed(true);
-    if (!billingName || !addressZipCode || !addressStreet || !addressState || !addressCity || !addressDistrict) {
-      toast.error("Por favor, preencha todas as informações obrigatórias antes de prosseguir.");
-      return false;
-    }
-    return true;
   };
 
   return (
@@ -148,10 +139,6 @@ export default function AddressForm(props) {
           />
         </Grid>
       </Grid>
-      {/* Botão para testar a próxima etapa */}
-      <Button onClick={handleNextStep} variant="contained" color="primary">
-        Próximo
-      </Button>
     </React.Fragment>
   );
 }
