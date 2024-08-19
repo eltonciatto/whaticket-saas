@@ -12,6 +12,7 @@ import Cookies from 'js-cookie'; // Usando js-cookie
 
 import usePlans from "../../../hooks/usePlans";
 import useCompanies from "../../../hooks/useCompanies";
+import api from "../../../services/api"; // Importando a API para fazer a atualização do planId
 
 const useStyles = makeStyles((theme) => ({
   '@global': {
@@ -46,12 +47,11 @@ export default function Pricing(props) {
     activeStep,
   } = props;
 
-  const { finder } = usePlans();
+  const { list } = usePlans();
   const { find } = useCompanies();
 
   const classes = useStyles();
   const [storagePlans, setStoragePlans] = useState(() => {
-    // Carregando os planos do cookie ao inicializar
     const savedPlans = Cookies.get("storagePlans");
     return savedPlans ? JSON.parse(savedPlans) : [];
   });
@@ -60,59 +60,58 @@ export default function Pricing(props) {
   const [dataCarregada, setDataCarregada] = useState(false);
 
   useEffect(() => {
-    if (!companyId || dataCarregada) return;
+    if (dataCarregada) return;
 
     const fetchData = async () => {
       setLoading(true);
       try {
         console.log("Carregando dados da empresa com ID:", companyId);
-        const companiesList = await find(companyId);
-        console.log("Dados da empresa carregados:", companiesList);
-        if (companiesList && companiesList.planId) {
-          await loadPlans(companiesList.planId);
-          setDataCarregada(true);
+        const plans = await list(); // Buscando todos os planos disponíveis
+        if (plans && plans.length > 0) {
+          const formattedPlans = plans.map(plan => ({
+            title: plan.name,
+            planId: plan.id,
+            price: plan.value,
+            description: [
+              `${plan.users} Usuários`,
+              `${plan.connections} Conexão`,
+              `${plan.queues} Filas`
+            ],
+            users: plan.users,
+            connections: plan.connections,
+            queues: plan.queues,
+            buttonText: 'SELECIONAR',
+            buttonVariant: 'outlined',
+          }));
+
+          // Armazenando os planos no cookie
+          Cookies.set("storagePlans", JSON.stringify(formattedPlans), { expires: 1 });
+          setStoragePlans(formattedPlans);
         } else {
-          console.error("Erro: planId não foi encontrado para a empresa.");
+          console.error("Erro: Nenhum plano encontrado.");
         }
       } catch (error) {
-        console.error("Erro ao carregar dados da empresa:", error);
+        console.error("Erro ao carregar os planos:", error);
       } finally {
         setLoading(false);
+        setDataCarregada(true);
       }
     };
 
     fetchData();
-  }, [companyId, find, dataCarregada]);
+  }, [companyId, list, dataCarregada]);
 
-  const loadPlans = async (planId) => {
-    setLoading(true);
+  const handlePlanSelection = async (tier) => {
     try {
-      const plansCompanies = await finder(planId);
-      if (plansCompanies) {
-        const plans = [{
-          title: plansCompanies.name,
-          planId: plansCompanies.id,
-          price: plansCompanies.value,
-          description: [
-            `${plansCompanies.users} Usuários`,
-            `${plansCompanies.connections} Conexão`,
-            `${plansCompanies.queues} Filas`
-          ],
-          users: plansCompanies.users,
-          connections: plansCompanies.connections,
-          queues: plansCompanies.queues,
-          buttonText: 'SELECIONAR',
-          buttonVariant: 'outlined',
-        }];
-
-        // Armazenando os planos no cookie
-        Cookies.set("storagePlans", JSON.stringify(plans), { expires: 1 }); // Expira em 1 dia
-        setStoragePlans(plans);
-      } else {
-        console.error("Erro: Nenhum plano encontrado.");
-      }
+      setLoading(true);
+      // Atualizando o planId da empresa via API
+      await api.put(`/companies/${companyId}`, { planId: tier.planId });
+      setFieldValue("plan", JSON.stringify(tier));
+      setActiveStep(activeStep + 1);
+      toast.success("Plano alterado com sucesso!");
     } catch (error) {
-      console.error("Erro ao carregar planos:", error);
+      console.error("Erro ao atualizar o planId:", error);
+      toast.error("Não foi possível alterar o plano. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -168,10 +167,7 @@ export default function Pricing(props) {
                   fullWidth
                   variant={tier.buttonVariant}
                   color="primary"
-                  onClick={() => {
-                    setFieldValue("plan", JSON.stringify(tier));
-                    setActiveStep(activeStep + 1);
-                  }}
+                  onClick={() => handlePlanSelection(tier)}
                 >
                   {tier.buttonText}
                 </Button>
