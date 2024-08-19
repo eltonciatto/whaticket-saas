@@ -10,8 +10,13 @@ function PaymentDetails(props) {
   const { user } = useContext(AuthContext);
 
   // Garantindo que o JSON seja parseado corretamente e lidando com possíveis erros
-  const newPlan = plan ? JSON.parse(plan) : { price: 0 };
-  const { price } = newPlan;
+  let parsedPlan = { price: 0 };
+  try {
+    parsedPlan = plan ? JSON.parse(plan) : { price: 0 };
+  } catch (error) {
+    console.error("Erro ao parsear o plano:", error);
+  }
+  const { price } = parsedPlan;
 
   return (
     <Grid item container direction="column" xs={12} sm={6}>
@@ -19,40 +24,35 @@ function PaymentDetails(props) {
         Informação de pagamento
       </Typography>
       <Grid container>
-        <React.Fragment>
-          <Grid item xs={6}>
-            <Typography gutterBottom>Email:</Typography>
-          </Grid>
-          <Grid item xs={6}>
-            <Typography gutterBottom>{user.company.email}</Typography>
-          </Grid>
-        </React.Fragment>
-        <React.Fragment>
-          <Grid item xs={6}>
-            <Typography gutterBottom>Nome:</Typography>
-          </Grid>
-          <Grid item xs={6}>
-            <Typography gutterBottom>{firstName}</Typography>
-          </Grid>
-        </React.Fragment>
-        <React.Fragment>
-          <Grid item xs={6}>
-            <Typography gutterBottom>Endereço:</Typography>
-          </Grid>
-          <Grid item xs={6}>
-            <Typography gutterBottom>
-              {address2}, {city} - {state} {zipcode} {country}
-            </Typography>
-          </Grid>
-        </React.Fragment>
-        <React.Fragment>
-          <Grid item xs={6}>
-            <Typography gutterBottom>Total:</Typography>
-          </Grid>
-          <Grid item xs={6}>
-            <Typography gutterBottom>R${price.toLocaleString('pt-br', { minimumFractionDigits: 2 })}</Typography>
-          </Grid>
-        </React.Fragment>
+        <Grid item xs={6}>
+          <Typography gutterBottom>Email:</Typography>
+        </Grid>
+        <Grid item xs={6}>
+          <Typography gutterBottom>{user?.company?.email || "Email não disponível"}</Typography>
+        </Grid>
+
+        <Grid item xs={6}>
+          <Typography gutterBottom>Nome:</Typography>
+        </Grid>
+        <Grid item xs={6}>
+          <Typography gutterBottom>{firstName || "Nome não disponível"}</Typography>
+        </Grid>
+
+        <Grid item xs={6}>
+          <Typography gutterBottom>Endereço:</Typography>
+        </Grid>
+        <Grid item xs={6}>
+          <Typography gutterBottom>
+            {address2 || "Endereço não disponível"}, {city || "Cidade não disponível"} - {state || "Estado não disponível"} {zipcode || "CEP não disponível"} {country || "País não disponível"}
+          </Typography>
+        </Grid>
+
+        <Grid item xs={6}>
+          <Typography gutterBottom>Total:</Typography>
+        </Grid>
+        <Grid item xs={6}>
+          <Typography gutterBottom>R${price.toLocaleString('pt-br', { minimumFractionDigits: 2 })}</Typography>
+        </Grid>
       </Grid>
     </Grid>
   );
