@@ -60,29 +60,32 @@ export default function Pricing(props) {
   const companyId = Cookies.get("companyId"); // Usando js-cookie para obter o companyId
 
   useEffect(() => {
-    if (!companyId) {
-      console.error("Erro: companyId está nulo ou indefinido. Verifique se o usuário está logado corretamente.");
-      return;
-    }
+  if (!companyId) {
+    console.error("Erro: companyId está nulo ou indefinido. Verifique se o usuário está logado corretamente.");
+    return;
+  }
 
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const companiesList = await find(companyId);
-        if (companiesList && companiesList.planId) {
-          setCompaniesPlans(companiesList.planId);
-          await loadPlans(companiesList.planId);
-        } else {
-          console.error("Erro: planId não foi encontrado para a empresa.");
-        }
-      } catch (error) {
-        console.error("Erro ao carregar dados da empresa:", error);
-      } finally {
-        setLoading(false);
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      console.log("Carregando dados da empresa com ID:", companyId);
+      const companiesList = await find(companyId);
+      console.log("Dados da empresa carregados:", companiesList);
+      if (companiesList && companiesList.planId) {
+        setCompaniesPlans(companiesList.planId);
+        await loadPlans(companiesList.planId);
+      } else {
+        console.error("Erro: planId não foi encontrado para a empresa.");
       }
-    };
-    fetchData();
-  }, [companyId, find]);
+    } catch (error) {
+      console.error("Erro ao carregar dados da empresa:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchData();
+}, [companyId, find]);
+
 
   const loadPlans = async (planId) => {
     setLoading(true);
