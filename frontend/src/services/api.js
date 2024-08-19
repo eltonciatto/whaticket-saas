@@ -8,7 +8,7 @@ if (!process.env.REACT_APP_BACKEND_URL) {
 const api = axios.create({
   baseURL: process.env.REACT_APP_BACKEND_URL,
   withCredentials: true,
-  timeout: 10000, // 10 segundos de timeout
+  timeout: 30000, // 30 segundos de timeout
 });
 
 // Interceptor para capturar erros globalmente
@@ -28,7 +28,7 @@ api.interceptors.response.use(
 
 export const openApi = axios.create({
   baseURL: process.env.REACT_APP_BACKEND_URL,
-  timeout: 10000, // Timeout de 10 segundos também para a API aberta
+  timeout: 30000, // Timeout de 30 segundos também para a API aberta
 });
 
 export default api;
