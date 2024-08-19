@@ -4,19 +4,13 @@ import { InputField, SelectField } from "../../FormFields";
 import { AuthContext } from "../../../context/Auth/AuthContext";
 
 const countries = [
-  {
-    value: "BR",
-    label: "Brasil",
-  },
-  {
-    value: "usa",
-    label: "United States",
-  },
+  { value: "BR", label: "Brasil" },
+  { value: "USA", label: "United States" },
 ];
 
 export default function AddressForm(props) {
   const { user } = useContext(AuthContext);
-  const company = user?.company || {}; // Garantir que o objeto company existe
+  const company = user?.company || {};
 
   const [billingName, setBillingName] = useState(company.billingName || "");
   const [addressZipCode, setAddressZipCode] = useState(company.addressZipCode || "");
@@ -26,26 +20,19 @@ export default function AddressForm(props) {
   const [addressDistrict, setAddressDistrict] = useState(company.addressDistrict || "");
 
   const {
-    formField: {
-      firstName,
-      address1,
-      city,
-      state,
-      zipcode,
-      country,
-    },
+    formField: { firstName, address1, city, state, zipcode, country },
     setFieldValue
   } = props;
 
   useEffect(() => {
+    // Atualizando os valores do Formik com os valores do estado local
     setFieldValue(firstName.name, billingName);
     setFieldValue(zipcode.name, addressZipCode);
     setFieldValue(address1.name, addressStreet);
     setFieldValue(state.name, addressState);
     setFieldValue(city.name, addressCity);
     setFieldValue(country.name, addressDistrict);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [billingName, addressZipCode, addressStreet, addressState, addressCity, addressDistrict]);
+  }, [billingName, addressZipCode, addressStreet, addressState, addressCity, addressDistrict, setFieldValue]);
 
   return (
     <React.Fragment>
