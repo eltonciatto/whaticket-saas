@@ -30,7 +30,7 @@ export default function CheckoutPage(props) {
   const { formId, formField } = checkoutFormModel;
   
   const classes = useStyles();
-  const [activeStep, setActiveStep] = useState(1);
+  const [activeStep, setActiveStep] = useState(0);
   const [datePayment, setDatePayment] = useState(null);
   const [invoiceId, setInvoiceId] = useState(props.invoice?.id || ""); // Certifique-se de que o invoice está sendo passado corretamente
   const currentValidationSchema = validationSchema[activeStep];
