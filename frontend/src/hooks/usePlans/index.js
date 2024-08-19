@@ -22,7 +22,7 @@ const usePlans = () => {
 
     const finder = async (id) => {
         const { data } = await api.request({
-            url: /plans/${id},
+            url: `/plans/${id}`,
             method: 'GET'
         });
         return data;
@@ -39,7 +39,7 @@ const usePlans = () => {
 
     const update = async (data) => {
         const { data: responseData } = await api.request({
-            url: /plans/${data.id},
+            url: `/plans/${data.id}`,
             method: 'PUT',
             data
         });
@@ -48,7 +48,7 @@ const usePlans = () => {
 
     const remove = async (id) => {
         const { data } = await api.request({
-            url: /plans/${id},
+            url: `/plans/${id}`,
             method: 'DELETE'
         });
         return data;
@@ -56,7 +56,7 @@ const usePlans = () => {
 
     const getPlanCompany = async (params, id) => {
         const { data } = await api.request({
-            url: /companies/listPlan/${id},
+            url: `/companies/listPlan/${id}`,
             method: 'GET',
             params
         });
