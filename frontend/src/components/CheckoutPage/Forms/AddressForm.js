@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Grid, Typography } from "@material-ui/core";
+import { Grid, Typography, Button } from "@material-ui/core";
 import { InputField, SelectField } from "../../FormFields";
 import { AuthContext } from "../../../context/Auth/AuthContext";
 import { toast } from "react-toastify";
@@ -20,6 +20,7 @@ export default function AddressForm(props) {
   const [addressState, setAddressState] = useState(company.addressState || "");
   const [addressCity, setAddressCity] = useState(company.addressCity || "");
   const [addressDistrict, setAddressDistrict] = useState(company.addressDistrict || "");
+  const [hasTriedToProceed, setHasTriedToProceed] = useState(false);
 
   const {
     formField: { firstName, address1, city, state, zipcode, country },
@@ -27,17 +28,32 @@ export default function AddressForm(props) {
   } = props;
 
   useEffect(() => {
-    if (!company.billingName) {
-      toast.warn("Algumas informações do endereço não estão preenchidas. Por favor, revise.");
-    }
+    // Setando os valores iniciais no Formik
     setFieldValue(firstName.name, billingName);
-    setFieldValue(zipcode.name, addressZipCode);
+    setFieldValue(zipcode.name, formatZipCode(addressZipCode));
     setFieldValue(address1.name, addressStreet);
     setFieldValue(state.name, addressState);
     setFieldValue(city.name, addressCity);
     setFieldValue(country.name, addressDistrict);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [billingName, addressZipCode, addressStreet, addressState, addressCity, addressDistrict]);
+
+  const formatZipCode = (zipCode) => {
+    // Aceitar CEP sem hífen e formatá-lo automaticamente
+    if (zipCode && zipCode.length === 8 && /^[0-9]{8}$/.test(zipCode)) {
+      return zipCode.replace(/(\d{5})(\d{3})/, "$1-$2");
+    }
+    return zipCode;
+  };
+
+  const handleNextStep = () => {
+    setHasTriedToProceed(true);
+    if (!billingName || !addressZipCode || !addressStreet || !addressState || !addressCity || !addressDistrict) {
+      toast.error("Por favor, preencha todas as informações obrigatórias antes de prosseguir.");
+      return false;
+    }
+    return true;
+  };
 
   return (
     <React.Fragment>
@@ -55,7 +71,8 @@ export default function AddressForm(props) {
               setBillingName(e.target.value);
               setFieldValue(firstName.name, e.target.value);
             }}
-            helperText={!billingName && "Nome não encontrado. Por favor, preencha."}
+            error={hasTriedToProceed && !billingName}
+            helperText={hasTriedToProceed && !billingName && "Nome não preenchido"}
           />
         </Grid>
         <Grid item xs={6} sm={6}>
@@ -69,6 +86,8 @@ export default function AddressForm(props) {
               setAddressDistrict(e.target.value);
               setFieldValue(country.name, e.target.value);
             }}
+            error={hasTriedToProceed && !addressDistrict}
+            helperText={hasTriedToProceed && !addressDistrict && "País não preenchido"}
           />
         </Grid>
         <Grid item xs={4}>
@@ -76,12 +95,14 @@ export default function AddressForm(props) {
             name={zipcode.name}
             label={zipcode.label}
             fullWidth
-            value={addressZipCode}
+            value={formatZipCode(addressZipCode)}
             onChange={(e) => {
-              setAddressZipCode(e.target.value);
-              setFieldValue(zipcode.name, e.target.value);
+              const formattedZipCode = formatZipCode(e.target.value);
+              setAddressZipCode(formattedZipCode);
+              setFieldValue(zipcode.name, formattedZipCode);
             }}
-            helperText={addressZipCode && !/^[0-9]{5}-[0-9]{3}$/.test(addressZipCode) ? "CEP inválido" : ""}
+            error={hasTriedToProceed && !addressZipCode}
+            helperText={hasTriedToProceed && !addressZipCode && "CEP não preenchido"}
           />
         </Grid>
         <Grid item xs={8}>
@@ -94,6 +115,8 @@ export default function AddressForm(props) {
               setAddressStreet(e.target.value);
               setFieldValue(address1.name, e.target.value);
             }}
+            error={hasTriedToProceed && !addressStreet}
+            helperText={hasTriedToProceed && !addressStreet && "Endereço não preenchido"}
           />
         </Grid>
         <Grid item xs={4}>
@@ -106,6 +129,8 @@ export default function AddressForm(props) {
               setAddressState(e.target.value);
               setFieldValue(state.name, e.target.value);
             }}
+            error={hasTriedToProceed && !addressState}
+            helperText={hasTriedToProceed && !addressState && "Estado não preenchido"}
           />
         </Grid>
         <Grid item xs={8}>
@@ -118,9 +143,15 @@ export default function AddressForm(props) {
               setAddressCity(e.target.value);
               setFieldValue(city.name, e.target.value);
             }}
+            error={hasTriedToProceed && !addressCity}
+            helperText={hasTriedToProceed && !addressCity && "Cidade não preenchida"}
           />
         </Grid>
       </Grid>
+      {/* Botão para testar a próxima etapa */}
+      <Button onClick={handleNextStep} variant="contained" color="primary">
+        Próximo
+      </Button>
     </React.Fragment>
   );
 }
