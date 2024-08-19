@@ -94,9 +94,9 @@ export default function Pricing(props) {
           planId: plansCompanies.id,
           price: plansCompanies.value,
           description: [
-            ${plansCompanies.users} Usuários,
-            ${plansCompanies.connections} Conexão,
-            ${plansCompanies.queues} Filas
+            `${plansCompanies.users} Usuários`,
+            `${plansCompanies.connections} Conexão`,
+            `${plansCompanies.queues} Filas`
           ],
           users: plansCompanies.users,
           connections: plansCompanies.connections,
